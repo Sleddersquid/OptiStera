@@ -3,12 +3,11 @@
 #include <open62541pp/client.hpp>
 #include <open62541pp/node.hpp>
 
-// Soruces: 
+// Soruces
 // https://github.com/open62541pp/open62541pp/tree/master
 
-
-
-int main() {
+int main()
+{
     opcua::Client client;
     client.connect("opc.tcp://localhost:4840");
 
