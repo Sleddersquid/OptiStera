@@ -1,1 +1,146 @@
-<h> Hello World </h>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0"
+    />
+    <title>USN Horizon</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="./HorizionIconer/USN_Horizon_ICON_White.png"
+    />
+    <script async src="script.js"></script>
+    <!-- Det brukes defer sånn at alt skal loade inn før scriptet kjører -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="header navbar-container">
+      <div class="left-links">
+        <a class="navbar-anchor logo" href="#">USN Horizon</a>
+      </div>
+      <!-- Start of the navbar -->
+      <div class="middle-links">
+        <nav class="navbar">
+          <ul class="navbar-list sidebar">
+            <li class="navbar-item close" onclick="hideSidebar()">
+              <a class="navbar-anchor" href="#"
+                ><svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  width="24px"
+                  fill="#e8eaed"
+                >
+                  <path
+                    d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+                  />
+                </svg>
+              </a>
+            </li>
+            <li class="navbar-item">
+              <a class="navbar-anchor" href="./project">Prosjekter</a>
+            </li>
+            <li class="navbar-item">
+              <a class="navbar-anchor" href="./oss">Oss</a>
+            </li>
+          </ul>
+          <ul class="navbar-list mainbar">
+            <li class="navbar-item">
+              <a class="navbar-anchor" href="#">Home</a>
+            </li>
+            <li class="navbar-item">
+              <a class="navbar-anchor" href="./project">Prosjekter</a>
+            </li>
+            <li class="navbar-item">
+              <a class="navbar-anchor" href="./oss">Oss</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Div for the icons to the right-->
+      <div class="right-links">
+        <a
+          class="navbar-anchor social-icon-holder"
+          href="https://www.example.com"
+        >
+          <img
+            src="./HorizionIconer/white/icons8-facebook-f-96.png"
+            alt="Facebook"
+            class="social-icon"
+          />
+        </a>
+        <a
+          class="navbar-anchor social-icon-holder"
+          href="https://www.example.com"
+        >
+          <img
+            src="./HorizionIconer/white/icons8-instagram-96.png"
+            alt="Instagram"
+            class="social-icon"
+          />
+        </a>
+        <a
+          class="navbar-anchor social-icon-holder"
+          href="https://www.example.com"
+        >
+          <img
+            src="./HorizionIconer/white/icons8-linkedin-96.png"
+            alt="LinkedIn"
+            class="social-icon"
+          />
+        </a>
+        <a class="navbar-anchor menu" href="#" onclick="showSidebar()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="33px"
+            viewBox="0 -960 960 960"
+            width="33px"
+            fill="#e8eaed"
+          >
+            <path
+              d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"
+            />
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div class="card-container top-block">
+      <div class="card homepage-block">
+        <div class="content"></div>
+      </div>
+
+      <div class="card om-oss-block"><div class="content"></div></div>
+      <div class="card rocket-block"><div class="content"></div></div>
+      <div class="card sponsor-block bottom-block">
+        <div class="content"></div>
+      </div>
+      <div class="card spersmol-block-small">
+        <div class="small-card">
+          <div class="content small"></div>
+        </div>
+        <div class="footer">
+          <div class="right-footer">
+            <a href="#">USN Horizon</a>
+            <p>Kort info om oss/hva vi gjør/hvorfor vi gjør dette</p>
+          </div>
+          <div class="middle-footer">
+            <h4>Pages</h4>
+            <ul><li><a href="#">Home</a></li>
+            <li><a href="project/">Prosjekter</a></li>
+            <li><a href="oss/">Oss</a></li></ul>
+          </div>
+          <div class="left-footer">
+            <ul><li>Navn til Leder</li>
+            <li>tlf. nr. til Leder</li>
+            <li>email til Leder</li>
+            <li>Adresse</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

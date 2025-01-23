@@ -1,0 +1,296 @@
+/* ------------- Animations ------------- */
+/* @keyframes slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5svh);
+    scale: 0.5;
+  }
+  to {
+    scale(1);
+    opacity: 1;
+    background-color: rgba(11, 49, 102, 0.2);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+} */
+
+/* ------------- Animations ------------- */
+
+/*  ------------- Univrsall styling  ------------- */
+:root {
+  --custromRem: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  width: 100lvw;
+  background-color: rgba(0, 0, 0, 1);
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  font-family: "Roboto", sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100lvw;
+  background-image: url("./background.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+/*  ------------- Univrsall styling  ------------- */
+
+/*  ------------- Navbar css ------------- */
+a.navbar-anchor.logo::before {
+  /* adds logo before the "USN Horizon" */
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("./HorizionIconer/USN_Horizon_ICON_White.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: -3px;
+}
+
+div.header.navbar-container {
+  position: sticky;
+  top: 0;
+  right: 0;
+  z-index: 99;
+  width: 100svw;
+  height: 59px; /* Isn't really needed, but just in case */
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  background-color: rgba(9, 39, 82, 0.4);
+  backdrop-filter: blur(2px);
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 1);
+  border-bottom: 3px solid rgba(11, 49, 102, 0.7);
+}
+
+div.header.navbar-container > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  text-align: center;
+  padding: 5px 0;
+}
+
+ul.navbar-list {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  list-style-type: none;
+  gap: 5svw;
+}
+
+a.navbar-anchor {
+  display: flex;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  align-items: center;
+}
+
+/*  ------------- Social icons ------------- */
+.right-links.social-icon-holder {
+  padding: 7px max(3px, 1svw);
+  gap: 100px;
+}
+
+/* Style for the social icons */
+.social-icon {
+  width: 27px;
+  height: 27px;
+  vertical-align: middle;
+}
+
+ul.navbar-list.sidebar {
+  display: none;
+}
+/*  ------------- Social icons ------------- */
+
+/* ------------- Mobil version for navbar ------------- */
+nav.navbar > ul.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100svh;
+  width: 75svw;
+  z-index: 999;
+  background-color: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  display: none;
+}
+
+ul.navbar-list.sidebar li {
+  width: 100%;
+}
+
+ul.navbar-list.sidebar a {
+  width: 100%;
+  padding: 20px 10px;
+}
+/* ------------- Mobil version for navbar ------------- */
+
+/* ------------- Navbar css ------------- */
+
+div.card-container {
+  width: 100svw;
+  height: calc(100dvh - 59px);
+  overflow-y: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  scroll-snap-type: y mandatory;
+}
+
+div.card {
+  width: 100svw;
+  height: calc(100svh - 59px);
+  scroll-snap-align: start;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.content {
+  height: 77%;
+  width: min(80%, 70svw);
+  background-color: rgba(11, 49, 102, 0.2);
+  backdrop-filter: blur(17px);
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
+  border-radius: 25px;
+}
+
+div.card, div.small-card {
+  width: 100svw;
+  height: calc(100svh - 59px);
+  scroll-snap-align: start;
+}
+
+div.card,
+div.small-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ------------- Align the footer correctly ------------- */
+
+div.card.spersmol-block-small {
+  flex-direction: column;
+}
+
+div.small-card {
+  height: 73svh;
+  width: ;
+}
+
+/* div.content.small {
+  height: 80%;
+} */
+
+/* ------------- Footer ------------- */
+
+div.footer {
+  height: 27svh;
+  width: 100svw;
+  background-color: red;
+  background-color: rgba(9, 39, 82, 0.751);
+  backdrop-filter: blur(2px);
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px -1px 5px rgba(0, 0, 0, 1);
+  border-top: 3px solid rgba(11, 49, 102, 0.7);
+}
+
+
+
+/* Media query. Dette er for mobil*/
+@media screen and (max-width: 800px) {
+  div.navbar-container {
+    padding: 0px 0px;
+  }
+  nav.navbar > ul.navbar-list.mainbar {
+    display: none;
+  }
+
+  .header.navbar-container > div.middle-links {
+    flex: 0 0 auto;
+  }
+
+  .header.navbar-container > div.right-links {
+    justify-content: end;
+  }
+
+  .header.navbar-container > div.left-links {
+    justify-content: start;
+  }
+
+  div.right-links a.navbar-anchor {
+    padding: 10px 6px;
+  }
+
+  div.right-links a.navbar-anchor.menu {
+    padding: 5px 6px;
+  }
+
+  div.left-links a.navbar-anchor {
+    padding: 10px;
+  }
+
+  a.navbar-anchor.logo::before {
+    margin-right: 3px;
+  }
+
+  div.content {
+    height: 70%;
+    width: 80%;
+  }
+}
+
+/* Dette er for alle skjermer over if width <= 800 -> true */
+@media screen and (min-width: 801px) {
+  div.navbar-container a.navbar-anchor.menu {
+    display: none;
+  }
+
+  /* ------------- Hover effect Navbar elements -------------*/
+  div.navbar-container * {
+    transition: 0.22s ease-in-out;
+  }
+
+  a.navbar-anchor:hover:not(.menu, .logo) {
+    box-shadow: 5px 4px 15px rgba(104, 102, 102, 0.3),
+      -5px 4px 15px rgba(104, 102, 102, 0.3);
+    transform: scale(100px);
+    background-color: rgba(29, 37, 193, 0.714);
+  }
+  /* ------------- Hover effect Navbar elements -------------*/
+}
