@@ -10,7 +10,7 @@
 int main()
 {
     opcua::Client client;
-    client.connect("opc.tcp://localhost:4840");
+    client.connect("opc.tcp://sleddersquid:4840");
 
     opcua::Node node(client, opcua::VariableId::Server_ServerStatus_CurrentTime);
     const auto dt = node.readValueScalar<opcua::DateTime>();
