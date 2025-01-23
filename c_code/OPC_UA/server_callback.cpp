@@ -3,20 +3,19 @@
 #include <open62541pp/node.hpp>
 #include <open62541pp/server.hpp>
 
-// Sources: 
+// Sources:
 // https://open62541pp.github.io/open62541pp/server_valuecallback_8cpp-example.html
-
 
 int noe = 1;
 
 // Variable value callback to write current time before every read operation
 class CurrentTimeCallback : public opcua::ValueCallbackBase {
     void onRead(
-        opcua::Session& session,
-        const opcua::NodeId& id, hei igjen
-        [[maybe_unused]] const opcua::NumericRange* range,
-        const opcua::DataValue& value
-    ) override {
+        opcua::Session &session,
+        const opcua::NodeId &id,
+        [[maybe_unused]] const opcua::NumericRange *range,
+        const opcua::DataValue &value) override
+    {
         opcua::Node node(session.connection(), id);
         const auto valueOld = value.value().scalar<int>();
         const auto valueNow = noe++;
@@ -26,11 +25,10 @@ class CurrentTimeCallback : public opcua::ValueCallbackBase {
     }
 
     void onWrite(
-        [[maybe_unused]] opcua::Session& session,
-        [[maybe_unused]] const opcua::NodeId& id,
-        [[maybe_unused]] const opcua::NumericRange* range,
-        [[maybe_unused]] const opcua::DataValue& value
-    ) override {}
+        [[maybe_unused]] opcua::Session &session,
+        [[maybe_unused]] const opcua::NodeId &id,
+        [[maybe_unused]] const opcua::NumericRange *range,
+        [[maybe_unused]] const opcua::DataValue &value) override {}
 };
 
 int main() {
