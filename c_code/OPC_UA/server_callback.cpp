@@ -3,6 +3,12 @@
 #include <open62541pp/node.hpp>
 #include <open62541pp/server.hpp>
 
+// Sources: 
+// https://open62541pp.github.io/open62541pp/server_valuecallback_8cpp-example.html
+
+
+int noe = 1;
+
 // Variable value callback to write current time before every read operation
 class CurrentTimeCallback : public opcua::ValueCallbackBase {
     void onRead(
@@ -12,11 +18,11 @@ class CurrentTimeCallback : public opcua::ValueCallbackBase {
         const opcua::DataValue& value
     ) override {
         opcua::Node node(session.connection(), id);
-        const auto timeOld = value.value().scalar<opcua::DateTime>();
-        const auto timeNow = opcua::DateTime::now();
-        std::cout << "Time before read: " << timeOld.format("%Y-%m-%d %H:%M:%S") << std::endl;
-        std::cout << "Set current time: " << timeNow.format("%Y-%m-%d %H:%M:%S") << std::endl;
-        node.writeValueScalar(timeNow);
+        const auto valueOld = value.value().scalar<int>();
+        const auto valueNow = noe++;
+        std::cout << "Old value: " << valueOld << std::endl;
+        std::cout << "New value: " << valueNow << std::endl;
+        node.writeValueScalar(valueNow);
     }
 
     void onWrite(
@@ -31,12 +37,14 @@ int main() {
     opcua::Server server;
 
     const opcua::NodeId currentTimeId(1, 1000);
+
+    // Initialize the node with a value
     opcua::Node(server, opcua::ObjectId::ObjectsFolder)
-        .addVariable(currentTimeId, "CurrentTime")
-        .writeDisplayName({"en-US", "Current time"})
-        .writeDescription({"en-US", "Current time"})
-        .writeDataType<opcua::DateTime>()
-        .writeValueScalar(opcua::DateTime::now());
+        .addVariable(currentTimeId, "Value")
+        .writeDisplayName({"en-US", "Current value"})
+        .writeDescription({"en-US", "Current value. See value"})
+        .writeDataType<int>()
+        .writeValueScalar(29543687);
 
     CurrentTimeCallback currentTimeCallback;
     server.setVariableNodeValueCallback(currentTimeId, currentTimeCallback);

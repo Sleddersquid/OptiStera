@@ -21,20 +21,13 @@ int main() {
     opcua::Server server(std::move(config));
 
     // Add a variable node to the Objects node
-    opcua::Node parentNode1(server, opcua::ObjectId::ObjectsFolder);
-    opcua::Node parentNode2(server, opcua::ObjectId::ObjectsFolder);
+    opcua::Node parentNode(server, opcua::ObjectId::ObjectsFolder);
 
-    opcua::Node myIntegerNode1 = parentNode1.addVariable({1, 1000}, "Node 1");
-    opcua::Node myIntegerNode2 = parentNode2.addVariable({1, 1001}, "Node 2");
+    opcua::Node myIntegerNode = parentNode.addVariable({1, 1000}, "Node 1");
     // Write value attribute
-    myIntegerNode1.writeValueScalar(42);
-    myIntegerNode2.writeValueScalar(50);
+    myIntegerNode.writeValueScalar(4);
 
     server.run();
-
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
-    server.stop();
 
     std::cout << "End of file" << std::endl;
     return 0;

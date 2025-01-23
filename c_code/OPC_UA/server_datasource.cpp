@@ -2,6 +2,9 @@
  
 #include <open62541pp/server.hpp>
 #include <open62541pp/services/nodemanagement.hpp>
+
+// Sources:
+// https://open62541pp.github.io/open62541pp/server_datasource_8cpp-example.html
  
 /// Templated data source that stores the data of type `T` internally.
 template <typename T>
@@ -31,7 +34,7 @@ struct DataSource : public opcua::DataSourceBase {
         std::cout << "Write value to data source: " << data << "\n";
         return UA_STATUSCODE_GOOD;
     }
- 
+
     T data{};
 };
  
