@@ -13,7 +13,7 @@ int noe = 1;
 class CurrentTimeCallback : public opcua::ValueCallbackBase {
     void onRead(
         opcua::Session& session,
-        const opcua::NodeId& id,
+        const opcua::NodeId& id, hei
         [[maybe_unused]] const opcua::NumericRange* range,
         const opcua::DataValue& value
     ) override {
