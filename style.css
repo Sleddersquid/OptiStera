@@ -171,7 +171,7 @@ div.card-container {
   overflow-y: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
-  scroll-snap-type: y mandatory;
+  /* scroll-snap-type: y mandatory; */
 }
 
 div.card {
@@ -184,13 +184,13 @@ div.card {
 }
 
 div.content {
-  height: 77%;
+  height: 100%;
   width: min(80%, 70svw);
   background-color: rgba(11, 49, 102, 0.2);
   backdrop-filter: blur(17px);
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
-  border-radius: 25px;
+  /* border-radius: 25px; */
 }
 
 div.card, div.small-card {
@@ -199,8 +199,7 @@ div.card, div.small-card {
   scroll-snap-align: start;
 }
 
-div.card,
-div.small-card {
+div.card {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -209,12 +208,8 @@ div.small-card {
 /* ------------- Align the footer correctly ------------- */
 
 div.card.spersmol-block-small {
+  justify-content: end;
   flex-direction: column;
-}
-
-div.small-card {
-  height: 73svh;
-  width: ;
 }
 
 /* div.content.small {
