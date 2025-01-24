@@ -19,6 +19,8 @@
 /*  ------------- Univrsall styling  ------------- */
 :root {
   --custromRem: 14px;
+  --border-color: rgb(20, 89, 185);
+  --navbar-color: rgb(22, 22, 22);
 }
 
 * {
@@ -73,7 +75,7 @@ a {
 }
 
 div.header.navbar-container {
-  position: sticky;
+  position: sticky; /* Use relative to make it non-sticky */
   top: 0;
   right: 0;
   z-index: 99;
@@ -82,11 +84,12 @@ div.header.navbar-container {
   display: flex;
   justify-content: space-between;
   flex-direction: row;
-  background-color: rgba(9, 39, 82, 0.4);
+  /* background-color: rgba(9, 39, 82, 0.4); */
+  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(2px);
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 1);
-  border-bottom: 3px solid rgba(11, 49, 102, 0.7);
+  border-bottom: 3px solid var(--border-color, rgb(6, 74, 168));
 }
 
 div.header.navbar-container > * {
@@ -141,9 +144,9 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 75svw;
+  width: 60svw;
   z-index: 999;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
@@ -151,6 +154,7 @@ nav.navbar > ul.sidebar {
   align-items: flex-start;
   justify-content: flex-start;
   display: none;
+  border-left: 3px solid var(--border-color, rgb(6, 74, 168));
 }
 
 ul.navbar-list.sidebar li {
@@ -172,64 +176,43 @@ div.card-container {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
   /* scroll-snap-type: y mandatory; */
-}
-
-div.card {
-  width: 100svw;
-  height: calc(100svh - 59px);
-  scroll-snap-align: start;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
-div.content {
+div.blur-content {
   height: 100%;
   width: min(80%, 70svw);
-  background-color: rgba(11, 49, 102, 0.2);
+  background-color: rgba(6, 16, 31, 0.2);
   backdrop-filter: blur(17px);
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
   /* border-radius: 25px; */
 }
 
-div.card, div.small-card {
-  width: 100svw;
-  height: calc(100svh - 59px);
-  scroll-snap-align: start;
-}
+/* ------------- Footer ------------- */
 
-div.card {
+div.main-footbar {
+  height: 27svh;
+  width: 100svw;
+  /* background-color: rgba(9, 39, 82, 0.751); */
+  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px -1px 5px rgba(0, 0, 0, 1);
+  border-top: 3px solid var(--border-color, rgb(6, 74, 168));
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
 }
 
-/* ------------- Align the footer correctly ------------- */
-
-div.card.spersmol-block-small {
-  justify-content: end;
-  flex-direction: column;
+div.footer > ul {
+  list-style-type: none;
 }
 
-/* div.content.small {
-  height: 80%;
-} */
-
-/* ------------- Footer ------------- */
-
-div.footer {
-  height: 27svh;
-  width: 100svw;
-  background-color: red;
-  background-color: rgba(9, 39, 82, 0.751);
-  backdrop-filter: blur(2px);
-  --webkit-backdrop-filter: blur(2px);
-  box-shadow: 0px -1px 5px rgba(0, 0, 0, 1);
-  border-top: 3px solid rgba(11, 49, 102, 0.7);
+div.footer * {
+  color: white;
+  text-decoration: none;
 }
-
-
 
 /* Media query. Dette er for mobil*/
 @media screen and (max-width: 800px) {
@@ -268,9 +251,10 @@ div.footer {
     margin-right: 3px;
   }
 
-  div.content {
-    height: 70%;
-    width: 80%;
+  div.blur-content {
+    width: 100%;
+    backdrop-filter: blur(7px);
+    --webkit-backdrop-filter: blur(2px);
   }
 }
 
