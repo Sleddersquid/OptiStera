@@ -60,12 +60,16 @@ a.navbar-anchor.logo::before {
   width: 27px;
   height: 27px;
   margin-right: 8px;
-  background-image: url("./HorizionIconer/USN_Horizon_ICON_White.png");
+  background-image: url("./HorizionIconer/Logo_Grupp4.PNG");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
   position: relative;
-  top: -3px;
+  top -3px;
+}
+
+a {
+  letter-spacing: 1.5px;
 }
 
 div.header.navbar-container {
