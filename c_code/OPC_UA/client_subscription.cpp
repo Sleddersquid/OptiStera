@@ -5,11 +5,15 @@
 #include <open62541pp/client.hpp>
 #include <open62541pp/subscription.hpp>
 
+#include <signal.h>
+
 // Soruces: 
 // https://open62541pp.github.io/open62541pp/client_subscription_8cpp-example.html
+    
+opcua::Client client;
+bool running = true;
 
 int main() {
-    opcua::Client client;
 
     // Add a state callback (session activated) to create subscription(s) and monitored items(s) in
     // a newly activated session. If the client is disconnected, the subscriptions and monitored
@@ -20,7 +24,7 @@ int main() {
 
         // Modify and delete the subscription via the returned Subscription<T> object
         opcua::SubscriptionParameters subscriptionParameters{};
-        subscriptionParameters.publishingInterval = 1000.0;
+        subscriptionParameters.publishingInterval = 50.0;
         sub.setSubscriptionParameters(subscriptionParameters);
         sub.setPublishingMode(true);
         // sub.deleteSubscription();
@@ -39,20 +43,23 @@ int main() {
                     << "- attribute id:      " << static_cast<int>(item.attributeId()) << "\n";
 
                 const auto dt = dv.value().scalar<int>();
-                std::cout << "Current server time (UTC): " << dt << std::endl;
+                std::cout << "Current value: " << dt << std::endl;
             }
         );
 
         // Modify and delete the monitored item via the returned MonitoredItem<T> object
         opcua::MonitoringParametersEx monitoringParameters{};
-        monitoringParameters.samplingInterval = 100.0;
+        monitoringParameters.samplingInterval = 50.0;
         mon.setMonitoringParameters(monitoringParameters);
         mon.setMonitoringMode(opcua::MonitoringMode::Reporting);
         // mon.deleteMonitoredItem();
     });
 
+    signal(SIGINT, [](int) { client.stop(); running = false; });
+    // signal(SIGTERM, [](int) { client.stop(); running = false; }); // To kill the process, worst case scenario
+
     // Endless loop to automatically (try to) reconnect to server.
-    while (true) {
+    while (running) {
         try {
             client.connect("opc.tcp://localhost:4840");
             // Run the client's main loop to process callbacks and events.
