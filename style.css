@@ -85,7 +85,7 @@ div.header.navbar-container {
   justify-content: space-between;
   flex-direction: row;
   /* background-color: rgba(9, 39, 82, 0.4); */
-  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
+  background-color: var(--navbar-color, rgb(22, 22, 22));
   backdrop-filter: blur(2px);
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 1);
@@ -127,11 +127,23 @@ a.navbar-anchor {
 }
 
 /* Style for the social icons */
-.social-icon {
+.social-icon:not(.github-icon) {
   width: 27px;
   height: 27px;
   vertical-align: middle;
 }
+
+a.github-icon-holder {
+  padding: 11.5px 16.5px;
+
+}
+
+.social-icon.github-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
 
 ul.navbar-list.sidebar {
   display: none;
@@ -196,7 +208,7 @@ div.main-footbar {
   height: 27svh;
   width: 100svw;
   /* background-color: rgba(9, 39, 82, 0.751); */
-  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
+  background-color: var(--navbar-color, rgb(22, 22, 22));
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px -1px 5px rgba(0, 0, 0, 1);
   border-top: 3px solid var(--border-color, rgb(6, 74, 168));
