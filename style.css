@@ -55,7 +55,7 @@ body {
 /*  ------------- Univrsall styling  ------------- */
 
 /*  ------------- Navbar css ------------- */
-a.navbar-anchor.logo::before {
+a.navbar-anchor.logo::before { /* , div.logo.footer > a.group-name::before */
   /* adds logo before the "USN Horizon" */
   content: "";
   display: inline-block;
@@ -67,7 +67,7 @@ a.navbar-anchor.logo::before {
   background-repeat: no-repeat;
   vertical-align: middle;
   position: relative;
-  top -3px;
+  top: -1px;
 }
 
 a {
@@ -202,10 +202,10 @@ div.blur-content {
   /* border-radius: 25px; */
 }
 
-/* ------------- Footer ------------- */
+/* --------------- Footer --------------- */
 
 div.main-footbar {
-  height: 27svh;
+  height: 25svh;
   width: 100svw;
   /* background-color: rgba(9, 39, 82, 0.751); */
   background-color: var(--navbar-color, rgb(22, 22, 22));
@@ -223,10 +223,80 @@ div.footer > ul {
 
 div.footer * {
   color: white;
-  text-decoration: none;
+  /* text-decoration: none; */
+  line-height: 25px;
 }
 
-/* Media query. Dette er for mobil*/
+
+
+ul.footer.info.list {
+  display: flex;
+  gap: 7px;
+  flex-direction: column;
+}
+
+ul.footer.info.list > li:nth-child(1)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("./Icons/white/icons8-map-marker-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+ul.footer.info.list > li:nth-child(2)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("./Icons/white/icons8-email-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: 1px;
+}
+
+ul.footer.info.list > li:nth-child(3)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("./Icons/white/icons8-call-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+}
+
+
+
+/* ---------------- LOGO FOOTER ---------------- */
+
+a.KM.logo > img {
+  width: 245px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+
+a.USN.logo > img {
+  width: 193px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+
+
+
+/* ----------- Media query. Dette er for mobil -----------*/
 @media screen and (max-width: 800px) {
   a {
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
