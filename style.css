@@ -241,7 +241,7 @@ ul.footer.info.list > li:nth-child(1)::before {
   width: 27px;
   height: 27px;
   margin-right: 8px;
-  background-image: url("./Icons/white/icons8-map-marker-25.png");
+  background-image: url("./Icons/icons8-map-marker-25.png");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
@@ -255,7 +255,7 @@ ul.footer.info.list > li:nth-child(2)::before {
   width: 27px;
   height: 27px;
   margin-right: 8px;
-  background-image: url("./Icons/white/icons8-email-25.png");
+  background-image: url("./Icons/icons8-email-25.png");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
@@ -269,7 +269,7 @@ ul.footer.info.list > li:nth-child(3)::before {
   width: 27px;
   height: 27px;
   margin-right: 8px;
-  background-image: url("./Icons/white/icons8-call-25.png");
+  background-image: url("./Icons/icons8-call-25.png");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
