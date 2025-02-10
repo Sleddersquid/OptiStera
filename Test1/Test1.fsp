@@ -1,0 +1,26 @@
+﻿{
+  "Guid": "00000000-0000-0000-0000-000000000000",
+  "PreviewImagePath": "Resources/Test1",
+  "Description": null,
+  "CreationDate": "2025-02-05T15:38:34.762009+01:00",
+  "ModifiedDate": "2025-02-06T16:32:30.441889+01:00",
+  "CreationUser": "espen",
+  "ModifiedUser": "espen",
+  "Tools": [],
+  "Components": [
+    "71db77fa-1d93-4025-847f-3979a0ee3297"
+  ],
+  "Resources": [
+    {
+      "Location": "ToolSuiteProject",
+      "Description": null,
+      "OwnerGuid": null,
+      "Metadata": {}
+    }
+  ],
+  "Metadata": {
+    "SystemVersions": "[{\"Type\":4,\"Configurations\":[{\"Key\":\"Version\",\"Value\":\"2.9.0.719\"},{\"Key\":\"RenderTier\",\"Value\":\"2\"},{\"Key\":\"InformationalVersion\",\"Value\":\"Rev. 6f8f2eaa75179d5d67d4983633f2878d6e5da085\"}]},{\"Type\":5,\"Configurations\":[{\"Key\":\"Name\",\"Value\":\"CMMT-ST Plug-in\"},{\"Key\":\"Version\",\"Value\":\"2.8.2.0\"},{\"Key\":\"ToolGUID\",\"Value\":\"dd9cd61e-7fbb-4785-87aa-0e774d93878e\"}]},{\"Type\":6,\"Configurations\":[{\"Key\":\"Name\",\"Value\":\"Scan\"},{\"Key\":\"Version\",\"Value\":\"2.9.0.190\"},{\"Key\":\"ToolGUID\",\"Value\":\"bb65b1ea-a5b7-470b-97c2-97c614d315ac\"}]}]",
+    "Versions": "[\"2.9.0.719\"]"
+  },
+  "FormatVersion": "2.00"
+}
