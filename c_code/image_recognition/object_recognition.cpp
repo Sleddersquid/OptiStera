@@ -14,6 +14,7 @@
 
 // From https://docs.opencv.org/4.x/d2/d0a/tutorial_introduction_to_tracker.html
 // https://learnopencv.com/object-tracking-using-opencv-cpp-python/
+// https://github.com/Sleddersquid/fussball_system/blob/main/c_code/test/tracker_test/tracker.cpp
 
 int main(int argc, char** argv) {
     cv::Rect bbox;
