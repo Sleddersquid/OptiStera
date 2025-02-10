@@ -4,6 +4,9 @@
 #include <open62541pp/server.hpp>
 // #include <open62541pp/plugin/accesscontrol_default.hpp>
 
+// Sources
+// https://open62541pp.github.io/open62541pp/server_datasource_8cpp-example.html
+
 int main() {
     opcua::ServerConfig config;
     config.setApplicationName("open62541pp server example");
