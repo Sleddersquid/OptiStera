@@ -4,6 +4,10 @@
 #include <open62541pp/plugin/accesscontrol_default.hpp>
 #include <open62541pp/server.hpp>
 
+// Sources:
+// https://open62541pp.github.io/open62541pp/server_accesscontrol_8cpp-example.html
+
+
 using namespace opcua;
 
 // Custom access control based on AccessControlDefault.

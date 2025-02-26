@@ -4,8 +4,7 @@
 #include <open62541pp/node.hpp>
 
 // Soruces
-// https://github.com/open62541pp/open62541pp/tree/master
-// 
+// https://open62541pp.github.io/open62541pp/client_minimal_8cpp-example.html
 
 int main()
 {
