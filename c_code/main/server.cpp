@@ -4,16 +4,18 @@
 #include <open62541pp/node.hpp>
 
 #include <iostream>
-// #include <thread>
-// #include <chrono>
+#include <thread>
+#include <chrono>
 
 // Soruces:
 // https://open62541pp.github.io/open62541pp/server_8cpp-example.html
+// 
 
+uint32_t delay_server_iterate = 0;
 
 int main() {
     opcua::ServerConfig config;
-    config.setApplicationName("open62541pp server example");
+    config.setApplicationName("open62541pp server objectRecgonition");
     config.setApplicationUri("urn:open62541pp.server.application");
     config.setProductUri("https://open62541pp.github.io");
     
@@ -21,8 +23,11 @@ int main() {
     opcua::Server server(std::move(config));
  
     // Add a variable node to the Objects node
-    opcua::Node parentNode(server, opcua::ObjectId::ObjectsFolder);
-    opcua::Node myIntegerNode = parentNode.addVariable(
+    // This node is the node connected to the objects folder, and is a parent node for all different nodes
+
+    opcua::Node Camera_Values(server, opcua::ObjectId::ObjectsFolder);
+
+    opcua::Node Node_Camera_X = Camera_Values.addVariable(
         {1, 1000},
         "Variable",
         opcua::VariableAttributes{}
@@ -30,12 +35,15 @@ int main() {
             .setDescription({"en-US", "A Variable"})
             .setDataType<int>()
     );
+
  
     // Write a value (attribute) to the node
-    myIntegerNode.writeValueScalar(42);
- 
-    // Read the value (attribute) from the node
-    std::cout << "Variable is: " << myIntegerNode.readValueScalar<int>() << std::endl;
- 
-    server.run();
+    while (true) {
+        // update the variables with the new values
+
+
+
+        delay_server_iterate = server.runIterate();
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
+    }
 }

@@ -7,14 +7,16 @@
 
 // Sources
 // https://github.com/Sleddersquid/fussball_system/blob/main/c_code/main.cpp
-// 
-
-
-// https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html
+// https://github.com/hcglhcgl/BallDetection/blob/master/balls.cpp
+// https://www.tutorialspoint.com/how-to-perform-bitwise-or-operation-on-two-images-in-opencv-python
+// https://docs.opencv.org/3.4/d8/d34/group__cudaarithm__elem.html#gafd098ee3e51c68daa793999c1da3dfb7
+// https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html why is this here?
 
 #define CAMERA_HEIGHT 720    // Can be SD: 480, HD: 720, FHD: 1080, QHD: 1440
 #define CAMERA_WIDTH 1280    // Can be SD: 640, HD: 1280, FHD: 1920, QHD: 2560
 #define CAMERA_FRAMERATE 100 // If fps higher than what the thread can handle, it will just run lower fps.
+
+#define NUM_IMAGES 15
 
 /**
  * @brief Function to calculate the center of a contour using moments
@@ -39,8 +41,8 @@ int main() {
 
   // Was (0, 120, 120) and (10, 255, 255).
   // Lightings conditions such as sunlight might detect hands and face 
-  cv::Scalar hsv_lower(5, 150, 50); // 0, 150, 50
-  cv::Scalar hsv_upper(10, 255, 255);  // 15, 255, 255
+  cv::Scalar hsv_lower(0, 120, 120); // 0, 150, 50
+  cv::Scalar hsv_upper(15, 255, 255);  // 15, 255, 255
 
   cam.options->video_width = CAMERA_WIDTH;
   cam.options->video_height = CAMERA_HEIGHT;
@@ -56,7 +58,7 @@ int main() {
   cv::Point new_center(0, 0);
   // cv::Point old_center(0, 0);
 
-  while (true) {
+  for (size_t i = 0; i < NUM_IMAGES; ++i) {
     if (!cam.getVideoFrame(image, 1000)) {
       std::cerr << "Timeout error" << std::endl;
     } 
@@ -87,7 +89,15 @@ int main() {
 
       std::cout << "New center.x: " << new_center.x << " New center.y: " << new_center.y << std::endl;
 
-      cv::circle(image, new_center, 5, cv::Scalar(0, 0, 255), -1); // Draw on mask, at point new_center,  
+      cv::circle(image, new_center, 5, cv::Scalar(0, 0, 255), -1); // Draw on mask, at point new_center, 
+      
+      cv::Mat mask_color;
+      image.copyTo(mask_color, mask);
+
+      cv::imwrite("screenshots/RGB_" + std::to_string(i) + ".jpg", image);
+      cv::imwrite("screenshots/MASK_" + std::to_string(i) + ".jpg", mask);
+      cv::imwrite("screenshots/COLOR_mask_" + std::to_string(i) + ".jpg", mask_color);
+
 
       // image is the Image from the camera (stream)
       cv::imshow("Video", image);
