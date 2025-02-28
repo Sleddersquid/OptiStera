@@ -202,6 +202,65 @@ div.blur-content {
   /* border-radius: 25px; */
 }
 
+
+
+/* ---------------- Main body ---------------- */
+
+div.content {
+  padding: 40px;
+}
+
+
+h2.heading {
+  display: flex;
+  align-items: center;
+  font-size: 40px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 3px;
+}
+
+h2.heading > span {
+  flex-grow: 1;
+  height: 3px;
+  background-color: white;
+  margin-left: 25px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* --------------- Footer --------------- */
 
 div.main-footbar {
@@ -275,6 +334,10 @@ ul.footer.info.list > li:nth-child(3)::before {
   vertical-align: middle;
   position: relative;
 }
+
+
+
+
 
 
 

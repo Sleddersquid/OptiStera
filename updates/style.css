@@ -1,0 +1,366 @@
+/* ------------- Animations ------------- */
+/* @keyframes slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5svh);
+    scale: 0.5;
+  }
+  to {
+    scale(1);
+    opacity: 1;
+    background-color: rgba(11, 49, 102, 0.2);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+} */
+
+/* ------------- Animations ------------- */
+
+/*  ------------- Univrsall styling  ------------- */
+:root {
+  --custromRem: 14px;
+  --border-color: rgb(20, 89, 185);
+  --navbar-color: rgb(22, 22, 22);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  width: 100lvw;
+  background-color: rgba(0, 0, 0, 1);
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  font-family: "Roboto", sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100lvw;
+  background-image: url("../Icons/background.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+/*  ------------- Univrsall styling  ------------- */
+
+/*  ------------- Navbar css ------------- */
+a.navbar-anchor.logo::before { /* , div.logo.footer > a.group-name::before */
+  /* adds logo before the "USN Horizon" */
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("../Icons/Logo_Grupp4.PNG");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+a {
+  letter-spacing: 1.5px;
+}
+
+div.header.navbar-container {
+  position: sticky; /* Use relative to make it non-sticky */
+  top: 0;
+  right: 0;
+  z-index: 99;
+  width: 100svw;
+  height: 59px; /* Isn't really needed, but just in case */
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  /* background-color: rgba(9, 39, 82, 0.4); */
+  background-color: var(--navbar-color, rgb(22, 22, 22));
+  backdrop-filter: blur(2px);
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 1);
+  border-bottom: 3px solid var(--border-color, rgb(6, 74, 168));
+}
+
+div.header.navbar-container > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  text-align: center;
+  padding: 5px 0;
+}
+
+ul.navbar-list {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  list-style-type: none;
+  gap: 5svw;
+}
+
+a.navbar-anchor {
+  display: flex;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  align-items: center;
+}
+
+/*  ------------- Social icons ------------- */
+.right-links.social-icon-holder {
+  padding: 7px max(3px, 1svw);
+  gap: 100px;
+}
+
+/* Style for the social icons */
+.social-icon:not(.github-icon) {
+  width: 27px;
+  height: 27px;
+  vertical-align: middle;
+}
+
+a.github-icon-holder {
+  padding: 11.5px 16.5px;
+
+}
+
+.social-icon.github-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+
+ul.navbar-list.sidebar {
+  display: none;
+}
+/*  ------------- Social icons ------------- */
+
+/* ------------- Mobil version for navbar ------------- */
+nav.navbar > ul.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100svh;
+  width: 60svw;
+  z-index: 999;
+  background-color: var(--navbar-color, rgba(0, 0, 0, 1));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  display: none;
+  border-left: 3px solid var(--border-color, rgb(6, 74, 168));
+}
+
+ul.navbar-list.sidebar li {
+  width: 100%;
+}
+
+ul.navbar-list.sidebar a {
+  width: 100%;
+  padding: 20px 10px;
+}
+/* ------------- Mobil version for navbar ------------- */
+
+/* ------------- Navbar css ------------- */
+
+div.card-container {
+  width: 100svw;
+  height: calc(100dvh - 59px);
+  overflow-y: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  /* scroll-snap-type: y mandatory; */
+  display: flex;
+  justify-content: center;
+}
+
+div.blur-content {
+  height: 100%;
+  width: min(80%, 70svw);
+  background-color: rgba(6, 16, 31, 0.2);
+  backdrop-filter: blur(17px);
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
+  /* border-radius: 25px; */
+}
+
+/* --------------- Footer --------------- */
+
+div.main-footbar {
+  height: 25svh;
+  width: 100svw;
+  /* background-color: rgba(9, 39, 82, 0.751); */
+  background-color: var(--navbar-color, rgb(22, 22, 22));
+  --webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px -1px 5px rgba(0, 0, 0, 1);
+  border-top: 3px solid var(--border-color, rgb(6, 74, 168));
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+div.footer > ul {
+  list-style-type: none;
+}
+
+div.footer * {
+  color: white;
+  /* text-decoration: none; */
+  line-height: 25px;
+}
+
+
+
+ul.footer.info.list {
+  display: flex;
+  gap: 7px;
+  flex-direction: column;
+}
+
+ul.footer.info.list > li:nth-child(1)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("../Icons/icons8-map-marker-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+ul.footer.info.list > li:nth-child(2)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("../Icons/icons8-email-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  top: 1px;
+}
+
+ul.footer.info.list > li:nth-child(3)::before {
+  content: "";
+  display: inline-block;
+  width: 27px;
+  height: 27px;
+  margin-right: 8px;
+  background-image: url("../Icons/icons8-call-25.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+}
+
+
+
+/* ---------------- LOGO FOOTER ---------------- */
+
+a.KM.logo > img {
+  width: 245px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+
+a.USN.logo > img {
+  width: 193px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+
+
+
+/* ----------- Media query. Dette er for mobil -----------*/
+@media screen and (max-width: 800px) {
+  a {
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+  }
+
+
+  div.navbar-container {
+    padding: 0px 0px;
+  }
+  nav.navbar > ul.navbar-list.mainbar {
+    display: none;
+  }
+
+  .header.navbar-container > div.middle-links {
+    flex: 0 0 auto;
+  }
+
+  .header.navbar-container > div.right-links {
+    justify-content: end;
+  }
+
+  .header.navbar-container > div.left-links {
+    justify-content: start;
+  }
+
+  div.right-links a.navbar-anchor {
+    padding: 10px 6px;
+  }
+
+  div.right-links a.navbar-anchor.menu {
+    padding: 5px 6px;
+  }
+
+  div.left-links a.navbar-anchor {
+    padding: 10px;
+  }
+
+  a.navbar-anchor.logo::before {
+    margin-right: 3px;
+  }
+
+  div.blur-content {
+    width: 100%;
+    backdrop-filter: blur(7px);
+    --webkit-backdrop-filter: blur(2px);
+  }
+}
+
+/* Dette er for alle skjermer over if width <= 800 -> true */
+@media screen and (min-width: 801px) {
+  div.navbar-container a.navbar-anchor.menu {
+    display: none;
+  }
+
+  /* ------------- Hover effect Navbar elements -------------*/
+  div.navbar-container * {
+    transition: 0.22s ease-in-out;
+  }
+
+  a.navbar-anchor:hover:not(.menu, .logo) {
+    box-shadow: 5px 4px 15px rgba(104, 102, 102, 0.3),
+      -5px 4px 15px rgba(104, 102, 102, 0.3);
+    transform: scale(100px);
+    background-color: rgba(29, 37, 193, 0.714);
+  }
+  /* ------------- Hover effect Navbar elements -------------*/
+}
