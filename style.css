@@ -183,7 +183,7 @@ ul.navbar-list.sidebar a {
 
 div.card-container {
   width: 100svw;
-  height: calc(100dvh - 59px);
+  /* height: auto; */
   overflow-y: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -193,7 +193,7 @@ div.card-container {
 }
 
 div.blur-content {
-  height: 100%;
+  /* height: auto; */
   width: min(80%, 70svw);
   background-color: rgba(6, 16, 31, 0.2);
   backdrop-filter: blur(17px);
@@ -206,8 +206,8 @@ div.blur-content {
 
 /* ---------------- Main body ---------------- */
 
-div.content {
-  padding: 40px;
+div.content-box {
+  padding-top: 20px;
 }
 
 h2.heading {
@@ -218,17 +218,43 @@ h2.heading {
   text-transform: uppercase;
   color: white;
   letter-spacing: 3px;
+  margin: 0 50px 0 50px;
 }
 
-h2.heading > span {
+h2.heading > span.line-title {
   flex-grow: 1;
   height: 3px;
   background-color: white;
-  margin-left: 25px;
 }
 
+h2.heading > span.line-title.left {
+  margin: 0 10px 0 20px;
+}
 
+h2.heading > span.line-title.right {
+  margin: 0 20px 0 10px;
+}
 
+section.content {
+  height: 30svh;
+  width: 100%;
+  margin-top: 10px;
+}
+
+section.content.optistera {
+  /* background:  */
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+section.content.optistera > img {
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  height: 100%;
+}
 
 
 
