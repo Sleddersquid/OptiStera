@@ -1,7 +1,7 @@
 // Kanksje sette en if så at denne ikke langes når menyen ikke er ute
 console.log(screen.width);
 
-if (screen.width < 801) {
+if (screen.width < 900) {
     function showSidebar() {
         const sidebarEl = document.querySelector("ul.sidebar");
         sidebarEl.style.display = "flex";
@@ -46,4 +46,4 @@ if (screen.width < 801) {
       
         timelineEvents.forEach((el) => observer.observe(el));
       });
-    };
+};

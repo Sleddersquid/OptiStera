@@ -16,20 +16,35 @@
 } */
 
 @keyframes scaleUp {
-  0% { transform: rotate(-45deg) scale(1.0); background-color: white;}
-  50% { transform: rotate(0deg) scale(1.1); }
-  100% { transform: rotate(45deg) scale(1.0); background-color: black;}
+  0% {
+    transform: rotate(-45deg) scale(1);
+    background-color: white;
+  }
+  50% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(45deg) scale(1);
+    background-color: black;
+  }
 }
 
 @keyframes scaleDown {
-  0% { transform: rotate(45deg) scale(1.0); background-color: black;}
-  50% { transform: rotate(0deg) scale(1.1); }
-  100% { transform: rotate(-45deg) scale(1.0); background-color: white;}
+  0% {
+    transform: rotate(45deg) scale(1);
+    background-color: black;
+  }
+  50% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(-45deg) scale(1);
+    background-color: white;
+  }
 }
 
 /* ------------- Timeline ------------- */
 /* From https://codepen.io/Fischaela/pen/NWNQKW */
-
 
 /* body {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -39,8 +54,8 @@
   line-height: 1.5;
   letter-spacing: 0.05em;
   } */
-  
-  /*  ------------- Univrsall styling  ------------- */
+
+/*  ------------- Univrsall styling  ------------- */
 
 :root {
   --custromRem: 14px;
@@ -297,8 +312,6 @@ section.content.optistera > h2 {
   width: 25%;
 }
 
-
-
 /* ------------------ Timeline ------------------ */
 
 /* Layout */
@@ -315,7 +328,7 @@ section.content.optistera > h2 {
   max-width: 40em;
 }
 
-.timeline-event:not(.last):before{
+.timeline-event:not(.last):before {
   background-color: white;
   content: "";
   margin-left: -1px;
@@ -326,7 +339,7 @@ section.content.optistera > h2 {
   height: 73%;
 }
 
-.timeline-event:before{
+.timeline-event:before {
   background-color: white;
   content: "";
   margin-left: -1px;
@@ -356,9 +369,8 @@ section.content.optistera > h2 {
 
 .timeline-event:hover .timeline-event-thumbnail {
   /* transform: rotate(-45deg); */
-  box-shadow: inset 12em 0 0 0  var(--navbar-color);
+  box-shadow: inset 12em 0 0 0 var(--navbar-color);
 }
-
 
 .timeline-event-copy {
   padding: 2em;
@@ -408,17 +420,6 @@ section.content.optistera > h2 {
   padding: 0.25em 1em 0.2em 1em;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 /* --------------- Footer --------------- */
 
 div.main-footbar {
@@ -441,7 +442,7 @@ div.footer > ul {
 
 div.footer.pages > h4.indent-left {
   position: relative;
- left: -15px;
+  left: -15px;
 }
 
 div.footer * {
@@ -496,8 +497,6 @@ ul.footer.info.list > li:nth-child(3)::before {
   vertical-align: middle;
   position: relative;
 }
-
-
 
 /* ---------------- LOGO FOOTER ---------------- */
 
@@ -567,15 +566,16 @@ a.USN.logo > img {
   h2.heading {
     font-size: 22px;
   }
-  
-  h2.optistera-text, h2 {
+
+  h2.optistera-text,
+  h2 {
     font-size: 18px;
   }
 
   h2.heading {
     margin: 0 10px 0 15px;
   }
-  
+
   h2.heading > span.line-title.right {
     margin: 0 10px 0 10px;
   }
@@ -584,21 +584,15 @@ a.USN.logo > img {
     animation: scaleUp 0.3s linear;
     background-color: var(--navbar-color);
   }
-  
+
   .timeline-event .timeline-event-icon {
     animation: scaleDown 0.3s linear;
   }
-  
+
   .timeline-event.visible .timeline-event-thumbnail {
     /* transform: rotate(-45deg); */
-    box-shadow: inset 12em 0 0 0  var(--navbar-color);
+    box-shadow: inset 12em 0 0 0 var(--navbar-color);
   }
-
-
-
-
-
-
 
   /* -------- Timeline -------- */
   .timeline-event-copy > p.timeline-event-thumbnail {
@@ -613,24 +607,20 @@ a.USN.logo > img {
     margin-left: 15px;
   }
 
-
   .timeline-event-icon {
     left: 3em;
   }
-
 
   /* -------------- Footer -------------- */
   div.main-footbar {
     height: auto;
     /* display: flex; */
-    flex-wrap: wrap;  /* Allows items to wrap to the next row */
-    flex-direction: row;  /* Default row direction */
-    gap: 30px;  /* Adds spacing between items */
+    flex-wrap: wrap; /* Allows items to wrap to the next row */
+    flex-direction: row; /* Default row direction */
+    gap: 30px; /* Adds spacing between items */
     /* width: 200px; Adjust to control wrapping */
     padding: 20px 0;
-}
-
-
+  }
 }
 
 /* Dette er for alle skjermer over if width <= 800 -> true */
