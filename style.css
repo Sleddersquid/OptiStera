@@ -14,13 +14,133 @@
   }
 } */
 
-/* ------------- Animations ------------- */
+/* ------------- Timeline ------------- */
+/* From https://codepen.io/Fischaela/pen/NWNQKW */
+
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
+
+body {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: black;
+  font-size: 1em;
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+}
+
+/* Layout */
+.timeline h3,
+h4,
+p {
+  color: white;
+}
+
+/* Styling */
+.timeline {
+  margin: 0 auto;
+  position: relative;
+  max-width: 40em;
+}
+
+.timeline-event:not(.last):before{
+  background-color: white;
+  content: "";
+  margin-left: -1px;
+  position: absolute;
+  top: 57px;
+  left: 2em;
+  width: 2px;
+  height: 73%;
+}
+
+.timeline-event:before{
+  background-color: white;
+  content: "";
+  margin-left: -1px;
+  position: absolute;
+  top: 57px;
+  left: 2em;
+  width: 2px;
+  height: 76%;
+}
+
+.timeline-event.last {
+  height: 240px;
+}
+
+.timeline-event {
+  position: relative;
+}
+
+.timeline-event:hover .timeline-event-icon {
+  transform: rotate(-45deg);
+  background-color: var(--navbar-color);
+}
+
+.timeline-event:hover .timeline-event-thumbnail {
+  /* transform: rotate(-45deg); */
+  box-shadow: inset 12em 0 0 0  var(--navbar-color);
+}
+
+.timeline-event-copy {
+  padding: 2em;
+  position: relative;
+  top: -1.875em;
+  left: 4em;
+  width: 80%;
+}
+.timeline-event-copy h3 {
+  font-size: 1.75em;
+}
+.timeline-event-copy h4 {
+  font-size: 1.2em;
+}
+.timeline-event-copy h4.last {
+  margin-bottom: 1em;
+}
+.timeline-event-copy strong {
+  font-weight: 700;
+}
+
+.timeline-event-icon {
+  /* For transition */
+  transition: transform 0.2s ease-in;
+  transform: rotate(45deg);
+  background-color: white;
+  outline: 10px solid transparent;
+  display: block;
+  margin: 0.5em 0.5em 0.5em -0.5em;
+  position: absolute;
+  top: 0;
+  left: 2em;
+  width: 1em;
+  height: 1em;
+  z-index: 1; /* Ensure the icon is placed on top */
+  /* overflow: visible; */
+}
+
+.timeline-event-thumbnail {
+  text-transform: uppercase;
+  transition: box-shadow 0.2s ease-in;
+  color: var(--colour-1);
+  font-size: 1em;
+  background-color: var(--navbar-color);
+  box-shadow: inset 4px 0 0 0em white;
+  display: inline-block;
+  margin-bottom: 1.2em;
+  padding: 0.25em 1em 0.2em 1em;
+}
 
 /*  ------------- Univrsall styling  ------------- */
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&display=swap");
+
 :root {
   --custromRem: 14px;
   --border-color: rgb(20, 89, 185);
   --navbar-color: rgb(22, 22, 22);
+  --colour-1: white;
+  --colour-2: rgb(22, 22, 22);
+  --colour-3: rgb(20, 89, 185);
 }
 
 * {
@@ -39,7 +159,7 @@ html {
   background-color: rgba(0, 0, 0, 1);
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
-  font-family: "Roboto", sans-serif;
+  /* font-family: "Roboto", sans-serif; "Jost", sans-serif; */
   scroll-behavior: smooth;
 }
 
@@ -55,7 +175,8 @@ body {
 /*  ------------- Univrsall styling  ------------- */
 
 /*  ------------- Navbar css ------------- */
-a.navbar-anchor.logo::before { /* , div.logo.footer > a.group-name::before */
+a.navbar-anchor.logo::before {
+  /* , div.logo.footer > a.group-name::before */
   /* adds logo before the "USN Horizon" */
   content: "";
   display: inline-block;
@@ -135,7 +256,6 @@ a.navbar-anchor {
 
 a.github-icon-holder {
   padding: 11.5px 16.5px;
-
 }
 
 .social-icon.github-icon {
@@ -143,7 +263,6 @@ a.github-icon-holder {
   height: 24px;
   vertical-align: middle;
 }
-
 
 ul.navbar-list.sidebar {
   display: none;
@@ -201,9 +320,6 @@ div.blur-content {
   box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
   /* border-radius: 25px; */
 }
-
-
-
 /* ---------------- Main body ---------------- */
 
 div.content-box {
@@ -241,11 +357,13 @@ section.content {
   margin-top: 10px;
 }
 
-section.content.optistera {
+section.content {
   /* background:  */
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  flex-direction: row;
+  /* flex-direction: column; */
 }
 
 section.content.optistera > img {
@@ -256,35 +374,24 @@ section.content.optistera > img {
   height: 100%;
 }
 
+section.content.optistera > h2 {
+  color: white;
+  width: 25%;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+a.project.button {
+  text-transform: uppercase;
+  padding: 20px 90px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  background-color: rgba(6, 74, 168, 0.8);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.22s ease-in-out;
+  text-decoration: none;
+}
 
 /* --------------- Footer --------------- */
 
@@ -310,8 +417,6 @@ div.footer * {
   /* text-decoration: none; */
   line-height: 25px;
 }
-
-
 
 ul.footer.info.list {
   display: flex;
@@ -360,12 +465,6 @@ ul.footer.info.list > li:nth-child(3)::before {
   position: relative;
 }
 
-
-
-
-
-
-
 /* ---------------- LOGO FOOTER ---------------- */
 
 a.KM.logo > img {
@@ -374,22 +473,17 @@ a.KM.logo > img {
   margin-right: 5px;
 }
 
-
 a.USN.logo > img {
   width: 193px;
   vertical-align: middle;
   margin-right: 5px;
 }
 
-
-
-
 /* ----------- Media query. Dette er for mobil -----------*/
 @media screen and (max-width: 800px) {
   a {
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
   }
-
 
   div.navbar-container {
     padding: 0px 0px;
