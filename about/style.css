@@ -229,15 +229,11 @@ section.content {
   height: 30svh;
   width: 100%;
   margin-top: 10px;
-}
-
-section.content {
   /* background:  */
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   /* flex-direction: row; */
-  /* flex-direction: column; */
 }
 
 div.profile-container {
@@ -448,6 +444,18 @@ a.USN.logo > img {
   h2.heading > span.line-title.right {
     margin: 0 10px 0 10px;
   }
+
+  section.content {
+    height: 30svh;
+    justify-content: space-evenly;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  div.profile-container.erik {
+    margin-bottom: 20px;
+  }
+
 
   /* -------------- Footer -------------- */
   div.main-footbar {
