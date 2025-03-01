@@ -14,6 +14,8 @@
   }
 } */
 
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
+
 /* ------------- Animations ------------- */
 
 /*  ------------- Univrsall styling  ------------- */
@@ -39,7 +41,7 @@ html {
   background-color: rgba(0, 0, 0, 1);
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
-  font-family: "Roboto", sans-serif;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   scroll-behavior: smooth;
 }
 

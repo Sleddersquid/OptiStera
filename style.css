@@ -22,16 +22,16 @@
 body {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: black;
-  font-size: 1em;
+  /* font-size: 1em;
   font-weight: 300;
   line-height: 1.5;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.05em; */
 }
 
 /* Layout */
 .timeline h3,
-h4,
-p {
+.timeline h4,
+.timeline p {
   color: white;
 }
 
@@ -379,19 +379,19 @@ section.content.optistera > h2 {
   width: 25%;
 }
 
-a.project.button {
-  text-transform: uppercase;
-  padding: 20px 90px;
-  font-size: 20px;
-  font-weight: bold;
-  color: white;
-  background-color: rgba(6, 74, 168, 0.8);
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.22s ease-in-out;
-  text-decoration: none;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* --------------- Footer --------------- */
 
