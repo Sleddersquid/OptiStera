@@ -33,7 +33,6 @@ if (screen.width < 900) {
       
         const observer = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
-              console.log(entry.target.classList);
             if (entry.isIntersecting) {
               entry.target.classList.add("visible");
               // entry.target.style = "background-color: #000;"; // DEbug
