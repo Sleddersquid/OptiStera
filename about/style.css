@@ -158,7 +158,7 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 60svw;
+  width: 55svw;
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
@@ -345,6 +345,16 @@ a.USN.logo > img {
     backdrop-filter: blur(7px);
     --webkit-backdrop-filter: blur(2px);
   }
+
+  /* -------------- Footer -------------- */
+  div.main-footbar {
+    height: auto;
+    /* display: flex; */
+    flex-wrap: wrap;  /* Allows items to wrap to the next row */
+    flex-direction: row;  /* Default row direction */
+    gap: 30px;  /* Adds spacing between items */
+    /* width: 200px; Adjust to control wrapping */
+    padding: 20px 0;
 }
 
 /* Dette er for alle skjermer over if width <= 800 -> true */

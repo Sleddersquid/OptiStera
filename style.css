@@ -1,3 +1,4 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
 /* ------------- Animations ------------- */
 /* @keyframes slide-fade-in {
   from {
@@ -22,14 +23,13 @@
 
 @keyframes scaleDown {
   0% { transform: rotate(45deg) scale(1.0); background-color: black;}
-  50% { transform: rotate(0deg) scale(0.9); }
+  50% { transform: rotate(0deg) scale(1.1); }
   100% { transform: rotate(-45deg) scale(1.0); background-color: white;}
 }
 
 /* ------------- Timeline ------------- */
 /* From https://codepen.io/Fischaela/pen/NWNQKW */
 
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
 
 /* body {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -38,10 +38,9 @@
   font-weight: 300;
   line-height: 1.5;
   letter-spacing: 0.05em;
-} */
-
-/*  ------------- Univrsall styling  ------------- */
-/* @import url("https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&display=swap"); */
+  } */
+  
+  /*  ------------- Univrsall styling  ------------- */
 
 :root {
   --custromRem: 14px;
@@ -64,21 +63,31 @@ html::-webkit-scrollbar {
 }
 
 html {
-  width: 100lvw;
+  width: 100svw;
+  min-height: 100svh;
   background-color: rgba(0, 0, 0, 1);
   scrollbar-width: none; /* Firefox */
-  /* font-family: "Roboto", sans-serif; "Jost", sans-serif; */
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   scroll-behavior: smooth;
 }
 
 body {
-  width: 100lvw;
+  width: 100svw;
+  min-height: 100svh;
+}
+
+div.full-wrapper {
+  position: fixed; /* Fixes the element to the screen */
+  top: 0;
+  left: 0;
+  width: 100svw;
+  height: 100svh;
   background-image: url("./Icons/background.jpg");
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: local;
   background-position: center;
+  z-index: -1;
 }
 
 /*  ------------- Univrsall styling  ------------- */
@@ -184,7 +193,7 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 60svw;
+  width: 55svw;
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
@@ -253,11 +262,11 @@ h2.heading > span.line-title {
 }
 
 h2.heading > span.line-title.left {
-  margin: 0 10px 0 20px;
+  margin: 0 20px 0 10px;
 }
 
 h2.heading > span.line-title.right {
-  margin: 0 20px 0 10px;
+  margin: 0 10px 0 20px;
 }
 
 section.content {
@@ -311,7 +320,7 @@ section.content.optistera > h2 {
   content: "";
   margin-left: -1px;
   position: absolute;
-  top: 57px;
+  top: 56px;
   left: 2em;
   width: 2px;
   height: 73%;
@@ -322,10 +331,10 @@ section.content.optistera > h2 {
   content: "";
   margin-left: -1px;
   position: absolute;
-  top: 57px;
+  top: 56px;
   left: 2em;
   width: 2px;
-  height: 76%;
+  height: 67%;
 }
 
 .timeline-event.last {
@@ -349,6 +358,7 @@ section.content.optistera > h2 {
   /* transform: rotate(-45deg); */
   box-shadow: inset 12em 0 0 0  var(--navbar-color);
 }
+
 
 .timeline-event-copy {
   padding: 2em;
@@ -422,10 +432,16 @@ div.main-footbar {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  flex-direction: row;
 }
 
 div.footer > ul {
   list-style-type: none;
+}
+
+div.footer.pages > h4.indent-left {
+  position: relative;
+ left: -15px;
 }
 
 div.footer * {
@@ -480,6 +496,8 @@ ul.footer.info.list > li:nth-child(3)::before {
   vertical-align: middle;
   position: relative;
 }
+
+
 
 /* ---------------- LOGO FOOTER ---------------- */
 
@@ -541,6 +559,78 @@ a.USN.logo > img {
     backdrop-filter: blur(7px);
     --webkit-backdrop-filter: blur(2px);
   }
+
+  .timeline {
+    padding-top: 15px;
+  }
+
+  h2.heading {
+    font-size: 22px;
+  }
+  
+  h2.optistera-text, h2 {
+    font-size: 18px;
+  }
+
+  h2.heading {
+    margin: 0 10px 0 15px;
+  }
+  
+  h2.heading > span.line-title.right {
+    margin: 0 10px 0 10px;
+  }
+
+  .timeline-event.visible .timeline-event-icon {
+    animation: scaleUp 0.3s linear;
+    background-color: var(--navbar-color);
+  }
+  
+  .timeline-event .timeline-event-icon {
+    animation: scaleDown 0.3s linear;
+  }
+  
+  .timeline-event.visible .timeline-event-thumbnail {
+    /* transform: rotate(-45deg); */
+    box-shadow: inset 12em 0 0 0  var(--navbar-color);
+  }
+
+
+
+
+
+
+
+  /* -------- Timeline -------- */
+  .timeline-event-copy > p.timeline-event-thumbnail {
+    font-size: 15px;
+  }
+
+  .timeline-event-copy > h3 {
+    font-size: 24px;
+  }
+
+  .timeline > .timeline-event:before {
+    margin-left: 15px;
+  }
+
+
+  .timeline-event-icon {
+    left: 3em;
+  }
+
+
+  /* -------------- Footer -------------- */
+  div.main-footbar {
+    height: auto;
+    /* display: flex; */
+    flex-wrap: wrap;  /* Allows items to wrap to the next row */
+    flex-direction: row;  /* Default row direction */
+    gap: 30px;  /* Adds spacing between items */
+    /* width: 200px; Adjust to control wrapping */
+    padding: 20px 0;
+}
+
+
 }
 
 /* Dette er for alle skjermer over if width <= 800 -> true */
