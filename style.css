@@ -14,125 +14,34 @@
   }
 } */
 
+@keyframes scaleUp {
+  0% { transform: rotate(-45deg) scale(1.0); background-color: white;}
+  50% { transform: rotate(0deg) scale(1.1); }
+  100% { transform: rotate(45deg) scale(1.0); background-color: black;}
+}
+
+@keyframes scaleDown {
+  0% { transform: rotate(45deg) scale(1.0); background-color: black;}
+  50% { transform: rotate(0deg) scale(0.9); }
+  100% { transform: rotate(-45deg) scale(1.0); background-color: white;}
+}
+
 /* ------------- Timeline ------------- */
 /* From https://codepen.io/Fischaela/pen/NWNQKW */
 
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
 
-body {
+/* body {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: black;
-  /* font-size: 1em;
+  font-size: 1em;
   font-weight: 300;
   line-height: 1.5;
-  letter-spacing: 0.05em; */
-}
-
-/* Layout */
-.timeline h3,
-.timeline h4,
-.timeline p {
-  color: white;
-}
-
-/* Styling */
-.timeline {
-  margin: 0 auto;
-  position: relative;
-  max-width: 40em;
-}
-
-.timeline-event:not(.last):before{
-  background-color: white;
-  content: "";
-  margin-left: -1px;
-  position: absolute;
-  top: 57px;
-  left: 2em;
-  width: 2px;
-  height: 73%;
-}
-
-.timeline-event:before{
-  background-color: white;
-  content: "";
-  margin-left: -1px;
-  position: absolute;
-  top: 57px;
-  left: 2em;
-  width: 2px;
-  height: 76%;
-}
-
-.timeline-event.last {
-  height: 240px;
-}
-
-.timeline-event {
-  position: relative;
-}
-
-.timeline-event:hover .timeline-event-icon {
-  transform: rotate(-45deg);
-  background-color: var(--navbar-color);
-}
-
-.timeline-event:hover .timeline-event-thumbnail {
-  /* transform: rotate(-45deg); */
-  box-shadow: inset 12em 0 0 0  var(--navbar-color);
-}
-
-.timeline-event-copy {
-  padding: 2em;
-  position: relative;
-  top: -1.875em;
-  left: 4em;
-  width: 80%;
-}
-.timeline-event-copy h3 {
-  font-size: 1.75em;
-}
-.timeline-event-copy h4 {
-  font-size: 1.2em;
-}
-.timeline-event-copy h4.last {
-  margin-bottom: 1em;
-}
-.timeline-event-copy strong {
-  font-weight: 700;
-}
-
-.timeline-event-icon {
-  /* For transition */
-  transition: transform 0.2s ease-in;
-  transform: rotate(45deg);
-  background-color: white;
-  outline: 10px solid transparent;
-  display: block;
-  margin: 0.5em 0.5em 0.5em -0.5em;
-  position: absolute;
-  top: 0;
-  left: 2em;
-  width: 1em;
-  height: 1em;
-  z-index: 1; /* Ensure the icon is placed on top */
-  /* overflow: visible; */
-}
-
-.timeline-event-thumbnail {
-  text-transform: uppercase;
-  transition: box-shadow 0.2s ease-in;
-  color: var(--colour-1);
-  font-size: 1em;
-  background-color: var(--navbar-color);
-  box-shadow: inset 4px 0 0 0em white;
-  display: inline-block;
-  margin-bottom: 1.2em;
-  padding: 0.25em 1em 0.2em 1em;
-}
+  letter-spacing: 0.05em;
+} */
 
 /*  ------------- Univrsall styling  ------------- */
-@import url("https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&display=swap"); */
 
 :root {
   --custromRem: 14px;
@@ -381,6 +290,113 @@ section.content.optistera > h2 {
 
 
 
+/* ------------------ Timeline ------------------ */
+
+/* Layout */
+.timeline h3,
+.timeline h4,
+.timeline p {
+  color: white;
+}
+
+/* Styling */
+.timeline {
+  margin: 0 auto;
+  position: relative;
+  max-width: 40em;
+}
+
+.timeline-event:not(.last):before{
+  background-color: white;
+  content: "";
+  margin-left: -1px;
+  position: absolute;
+  top: 57px;
+  left: 2em;
+  width: 2px;
+  height: 73%;
+}
+
+.timeline-event:before{
+  background-color: white;
+  content: "";
+  margin-left: -1px;
+  position: absolute;
+  top: 57px;
+  left: 2em;
+  width: 2px;
+  height: 76%;
+}
+
+.timeline-event.last {
+  height: 240px;
+}
+
+.timeline-event {
+  position: relative;
+}
+
+.timeline-event:hover .timeline-event-icon {
+  animation: scaleUp 0.3s linear;
+  background-color: var(--navbar-color);
+}
+
+.timeline-event:not(:hover) .timeline-event-icon {
+  animation: scaleDown 0.3s linear;
+}
+
+.timeline-event:hover .timeline-event-thumbnail {
+  /* transform: rotate(-45deg); */
+  box-shadow: inset 12em 0 0 0  var(--navbar-color);
+}
+
+.timeline-event-copy {
+  padding: 2em;
+  position: relative;
+  top: -1.875em;
+  left: 4em;
+  width: 80%;
+}
+.timeline-event-copy h3 {
+  font-size: 1.75em;
+}
+.timeline-event-copy h4 {
+  font-size: 1.2em;
+}
+.timeline-event-copy h4.last {
+  margin-bottom: 1em;
+}
+.timeline-event-copy strong {
+  font-weight: 700;
+}
+
+.timeline-event-icon {
+  /* For transition */
+  transform: rotate(45deg);
+  background-color: white;
+  outline: 10px solid transparent;
+  display: block;
+  margin: 0.5em 0.5em 0.5em -0.5em;
+  position: absolute;
+  top: 0;
+  left: 2em;
+  width: 1em;
+  height: 1em;
+  /* z-index: 1; Ensure the icon is placed on top */
+  /* overflow: visible; */
+}
+
+.timeline-event-thumbnail {
+  text-transform: uppercase;
+  transition: box-shadow 0.2s ease-in;
+  color: var(--colour-1);
+  font-size: 1em;
+  background-color: var(--navbar-color);
+  box-shadow: inset 4px 0 0 0em white;
+  display: inline-block;
+  margin-bottom: 1.2em;
+  padding: 0.25em 1em 0.2em 1em;
+}
 
 
 
@@ -541,7 +557,7 @@ a.USN.logo > img {
   a.navbar-anchor:hover:not(.menu, .logo) {
     box-shadow: 5px 4px 15px rgba(104, 102, 102, 0.3),
       -5px 4px 15px rgba(104, 102, 102, 0.3);
-    transform: scale(100px);
+    /* transform: scale(100px); */
     background-color: rgba(29, 37, 193, 0.714);
   }
   /* ------------- Hover effect Navbar elements -------------*/
