@@ -66,9 +66,9 @@ html::-webkit-scrollbar {
 html {
   width: 100lvw;
   background-color: rgba(0, 0, 0, 1);
-  -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
   /* font-family: "Roboto", sans-serif; "Jost", sans-serif; */
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   scroll-behavior: smooth;
 }
 
@@ -188,7 +188,7 @@ nav.navbar > ul.sidebar {
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* -webkit-backdrop-filter: blur(20px); */
   box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
   align-items: flex-start;
