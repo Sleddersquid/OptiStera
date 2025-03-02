@@ -200,7 +200,7 @@ div.blur-content {
 }
 /* ---------------- Main body ---------------- */
 
-div.content-box {
+div.content-box:nth-child(1) {
   padding-top: 20px;
 }
 
@@ -226,7 +226,7 @@ h2.heading > span.line-title.right {
 }
 
 section.content {
-  height: 35svh;
+  height: max(229px, 20svh);
   width: 100%;
   margin-top: 10px;
   /* background:  */
@@ -237,6 +237,7 @@ section.content {
 }
 
 div.profile-container {
+  width: 670px;
   padding: 20px;
   display: flex;
   justify-content: center;
@@ -256,8 +257,6 @@ div.profile-container {
 
 .card-container p, .card-container h3 {
   color: white;
-
-
 }
 
 div.img-desprition {
@@ -266,7 +265,7 @@ div.img-desprition {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  
+  gap: 10px;
 }
 
 div.img-desprition > h3 {
@@ -277,22 +276,6 @@ div.img-desprition > h3 {
 
 div.img-desprition > p {
   font-size: 19px;
-  font-weight: 300;
-  line-height: 30px;
-  /* text-align: justify; */
-  color: white;
-}
-
-
-
-div.img-desprition > h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-}
-
-div.img-desprition > p {
-  font-size: 14px;
   font-weight: 300;
   line-height: 30px;
   /* text-align: justify; */
@@ -401,10 +384,18 @@ a.USN.logo > img {
     height: 150px;
   }
 
+  div.img-desprition > h3 {
+    font-size: 18px;
+  }
+  
+  div.img-desprition > p {
+    font-size: 14px;
+  }
+
+  div.profile-container {
+    width: auto;
+  }
 }
-
-
-
 
 /* ----------- Media query. Dette er for mobil -----------*/
 @media screen and (max-width: 800px) {
@@ -477,10 +468,6 @@ a.USN.logo > img {
     gap: 20px;
   }
 
-  div.profile-container.erik {
-    margin-bottom: 20px;
-  }
-
 
   div.profile-container {
     width: 341px;
@@ -491,7 +478,10 @@ a.USN.logo > img {
     border-radius: 12px;
   }
 
-  
+  div.profile-container.erik {
+    margin-bottom: 20px;
+  }
+
   div.img-desprition > h3 {
     font-size: 18px;
   }
