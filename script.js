@@ -27,8 +27,8 @@ if (screen.width < 900) {
       
         const observerOptions = {
           root: null, // Uses viewport
-          rootMargin: "-60% 0px -40% 0px", 
-          threshold: 0, // 40% of the element must be visible
+          rootMargin: "-50% 0px -50% 0px", 
+          threshold: 0,
         };
       
         const observer = new IntersectionObserver((entries) => {
