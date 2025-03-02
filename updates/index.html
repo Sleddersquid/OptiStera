@@ -8,8 +8,12 @@
     />
     <title>OptiStera</title>
     <link rel="icon" type="image/png" href="../Icons/Logo_Grupp4.PNG" />
-    <script async src="script.js"></script>
-    <!-- Det brukes defer sånn at alt skal loade inn før scriptet kjører -->
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -37,21 +41,29 @@
               </a>
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/project">Project</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/project"
+                >Project</a
+              >
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/updates">Updates</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/updates"
+                >Updates</a
+              >
             </li>
             <li class="navbar-item">
               <a class="navbar-anchor" href="/grupper/D04-25/about">About</a>
             </li>
           </ul>
-          <ul class="navbar-list mainbar">
+          <ul class="navbar-list mainbar" style="margin-top: 28px">
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/project">Project</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/project"
+                >Project</a
+              >
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/updates">Updates</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/updates"
+                >Updates</a
+              >
             </li>
             <li class="navbar-item">
               <a class="navbar-anchor" href="/grupper/D04-25/about">About</a>
@@ -98,7 +110,281 @@
     </div>
     <div class="card-container">
       <div class="blur-content">
-        <div class="content"></div>
+        <div class="content">
+          <!-- ---------------------------------------- TIMELINE ---------------------------------------- -->
+          <div class="container-fluid">
+            <div class="row example-centered">
+              <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2">
+                <ul class="timeline timeline-centered">
+                  <li class="timeline-item period">
+                    <div class="timeline-info"></div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h2 class="timeline-title">Inception</h2>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>03 January 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Startup sprint</h3>
+                      <p>
+                        We spoke with Kongsberg Maritime to exchange our
+                        understanding of the task their requirements
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>20 January 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 1</h3>
+                      <p>Our first sprint!</p>
+                    </div>
+                  </li>
+                  <li class="timeline-item period">
+                    <div class="timeline-info"></div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h2 class="timeline-title">Elaboration</h2>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>03 February 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 2</h3>
+                      <p>
+                        We have now started our second sprint, and we are
+                        working on the project plan
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>17 February 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 3</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item period">
+                    <div class="timeline-info"></div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h2 class="timeline-title">Construction</h2>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>03 Mars 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 4</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>17 Mars 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 5</h3>
+                      <p>
+                        Our sprints shorten and full focus begins on the project
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>24 Mars 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 6</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>31 Mars 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 7</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>07 April 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 8</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>14 April 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 9</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>21 April 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 10</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item period">
+                    <div class="timeline-info"></div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h2 class="timeline-title">Transition</h2>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>28 April 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 11</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>05 May 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 12</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>12 May 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 13</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="timeline-item">
+                    <div class="timeline-info">
+                      <span>16 May 2025</span>
+                    </div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">Sprint 14</h3>
+                      <p>
+                        Nullam vel sem. Nullam vel sem. Integer ante arcu,
+                        accumsan a, consectetuer eget, posuere ut, mauris. Donec
+                        orci lectus, aliquam ut, faucibus non, euismod id,
+                        nulla. Donec vitae sapien ut libero venenatis faucibus.
+                        ullam dictum felis eu pede mollis pretium. Pellentesque
+                        ut neque.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- ------------------------------- END TIMELINE ------------------------------- -->
+        </div>
       </div>
     </div>
     <div class="main-footbar">
@@ -109,7 +395,7 @@
         <p>Kort info</p>
       </div>
       <div class="pages footer">
-        <h4>Pages</h4>
+        <h4 class="indent-left">Pages</h4>
         <ul>
           <li><a href="/grupper/D04-25/">Home</a></li>
           <li><a href="/grupper/D04-25/project">Project</a></li>
@@ -138,7 +424,9 @@
           style="text-decoration: none"
           href="https://www.kongsberg.com/maritime/"
           class="KM logo"
-          ><img src="../Icons/KONGSBERG_logo_horiz_neg.png" alt="Kongsberg logo"
+          ><img
+            src="../Icons/KONGSBERG_logo_horiz_neg.png"
+            alt="Kongsberg logo"
         /></a>
       </div>
 
@@ -153,4 +441,10 @@
       </div>
     </div>
   </body>
+  <script src="script.js"></script>
+  <!-- jQuery (required for Bootstrap 3 JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <!-- Bootstrap 3 JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </html>

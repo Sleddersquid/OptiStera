@@ -1,7 +1,6 @@
 // Kanksje sette en if så at denne ikke langes når menyen ikke er ute
-console.log(screen.width);
-
-if (screen.width < 900) {
+if (screen.width < 801) {
+  console.log(screen.width);
     function showSidebar() {
         const sidebarEl = document.querySelector("ul.sidebar");
         sidebarEl.style.display = "flex";
