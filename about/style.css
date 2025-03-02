@@ -226,7 +226,7 @@ h2.heading > span.line-title.right {
 }
 
 section.content {
-  height: 30svh;
+  height: 35svh;
   width: 100%;
   margin-top: 10px;
   /* background:  */
@@ -262,7 +262,7 @@ div.profile-container {
 
 div.img-desprition {
   /* width: 0%; */
-  height: 180px;
+  height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -284,6 +284,20 @@ div.img-desprition > p {
 }
 
 
+
+div.img-desprition > h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+div.img-desprition > p {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 30px;
+  /* text-align: justify; */
+  color: white;
+}
 
 
 
@@ -381,6 +395,17 @@ a.USN.logo > img {
   margin-right: 5px;
 }
 
+@media screen and (max-width: 1600px) {
+  .profile-img {
+    width: 150px;
+    height: 150px;
+  }
+
+}
+
+
+
+
 /* ----------- Media query. Dette er for mobil -----------*/
 @media screen and (max-width: 800px) {
   a {
@@ -446,7 +471,7 @@ a.USN.logo > img {
   }
 
   section.content {
-    height: 30svh;
+    height: auto;
     justify-content: space-evenly;
     flex-direction: column;
     gap: 20px;
@@ -456,6 +481,29 @@ a.USN.logo > img {
     margin-bottom: 20px;
   }
 
+
+  div.profile-container {
+    width: 341px;
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--navbar-color, rgba(0, 0, 0, 1));
+    border-radius: 12px;
+  }
+
+  
+  div.img-desprition > h3 {
+    font-size: 18px;
+  }
+  
+  div.img-desprition > p {
+    font-size: 14px;
+  }
+
+  .profile-img {
+    width: 160px;
+    height: 160px;
+  }
 
   /* -------------- Footer -------------- */
   div.main-footbar {
