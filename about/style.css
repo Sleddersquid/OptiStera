@@ -200,10 +200,6 @@ div.blur-content {
 }
 /* ---------------- Main body ---------------- */
 
-div.content-box:nth-child(1) {
-  padding-top: 20px;
-}
-
 h2.heading {
   display: flex;
   align-items: center;
@@ -444,6 +440,9 @@ a.USN.logo > img {
     --webkit-backdrop-filter: blur(2px);
   }
 
+  div.content-box {
+    padding-top: 20px;
+  }
 
   h2.heading {
     font-size: 22px;
