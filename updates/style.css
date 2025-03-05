@@ -135,7 +135,6 @@ a.navbar-anchor {
   display: flex;
   color: white;
   text-decoration: none;
-  padding: 10px 15px;
   font-size: 20px;
   font-weight: bold;
   border-radius: 5px;
@@ -198,8 +197,13 @@ ul.navbar-list.sidebar li {
 
 ul.navbar-list.sidebar a {
   width: 100%;
-  padding: 20px 10px;
+  padding: 20px 25px 20px 10px;
 }
+
+ul.navbar-list.sidebar a.close-icon {
+  padding: 17px 25px 17px 10px;
+}
+
 /* ------------- Mobil version for navbar ------------- */
 
 /* ------------- Navbar css ------------- */
