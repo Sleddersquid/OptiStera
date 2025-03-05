@@ -293,12 +293,16 @@ h2.heading > span.line-title.right {
 
 section.content {
   height: 30svh;
-  width: 100%;
+  /* width: 100%; */
   margin-top: 10px;
 }
 
-section.content {
-  /* background:  */
+section.content:not(.timeline-box) {
+  /* background: var(--navbar-color, rgba(0, 0, 0, 0.8));
+  border-radius: 30px;
+  border-right: 4px solid var(--border-color, rgb(6, 74, 168));
+  border-left: 4px solid var(--border-color, rgb(6, 74, 168)); */
+  margin: 20px 59px 0 59px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -561,6 +565,10 @@ a.USN.logo > img {
     width: 100%;
     backdrop-filter: blur(7px);
     --webkit-backdrop-filter: blur(2px);
+  }
+
+  section.content:not(.timeline-box) {
+    margin: 10px 0 0 0;
   }
 
   .timeline {

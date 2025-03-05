@@ -205,6 +205,14 @@ div.blur-content {
 }
 /* ---------------- Main body ---------------- */
 
+div.content-box {
+  margin-top: 10px;
+}
+
+div.content-box.mechanical {
+  margin-top: 20px;
+}
+
 h2.heading {
   display: flex;
   align-items: center;
@@ -227,14 +235,14 @@ h2.heading > span.line-title.right {
 }
 
 section.content {
-  height: max(229px, 20svh);
+  /* height: max(229px, 20svh); */
   width: 100%;
   margin-top: 10px;
   /* background:  */
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  /* flex-direction: row; */
+  flex-direction: row;
 }
 
 section.content.data {
@@ -242,15 +250,18 @@ section.content.data {
 }
 
 div.profile-container {
-  width: auto;
+  width: 40%;
   padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   border-radius: 30px;
+  border-right: 4px solid var(--border-color, rgb(6, 74, 168));
+  border-left: 4px solid var(--border-color, rgb(6, 74, 168));
+
 }
 
 .profile-img {
@@ -398,7 +409,7 @@ a.USN.logo > img {
   }
 
   div.profile-container {
-    width: auto;
+    width: 40%;
   }
 }
 
@@ -478,7 +489,7 @@ a.USN.logo > img {
 
 
   div.profile-container {
-    width: 341px;
+    width: max(65svw, 350px);
     padding: 15px;
     flex-direction: column;
     gap: 10px;
