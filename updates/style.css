@@ -53,7 +53,7 @@ a {
 
 html {
   width: 100lvw;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0);
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
