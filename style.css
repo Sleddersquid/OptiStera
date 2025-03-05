@@ -167,6 +167,7 @@ a.navbar-anchor {
   display: flex;
   color: white;
   text-decoration: none;
+  padding: 10px 15px;
   font-size: 20px;
   font-weight: bold;
   border-radius: 5px;
@@ -318,7 +319,6 @@ section.content > h2 {
   width: 25%;
 }
 
-
 section.content.about > img.gruppe_bilde {
   width: 40%;
   height: 40%;
@@ -329,7 +329,6 @@ section.content.about {
   height: auto;
   margin-bottom: 30px;
 }
-
 
 /* ------------------ Timeline ------------------ */
 
@@ -375,20 +374,6 @@ section.content.about {
 
 .timeline-event {
   position: relative;
-}
-
-.timeline-event:hover .timeline-event-icon {
-  animation: scaleUp 0.3s linear;
-  background-color: var(--navbar-color);
-}
-
-.timeline-event:not(:hover) .timeline-event-icon {
-  animation: scaleDown 0.3s linear;
-}
-
-.timeline-event:hover .timeline-event-thumbnail {
-  /* transform: rotate(-45deg); */
-  box-shadow: inset 12em 0 0 0 var(--navbar-color);
 }
 
 .timeline-event-copy {
@@ -438,8 +423,6 @@ section.content.about {
 }
 
 /* ------------------- END timeline ------------------- */
-
-
 
 /* --------------- Footer --------------- */
 
@@ -662,4 +645,20 @@ a.USN.logo > img {
     background-color: rgba(29, 37, 193, 0.714);
   }
   /* ------------- Hover effect Navbar elements -------------*/
+
+  /* ------------------- Timeline ------------------- */
+  .timeline-event:hover .timeline-event-icon {
+    animation: scaleUp 0.3s linear;
+    background-color: var(--navbar-color);
+  }
+
+  .timeline-event:not(:hover) .timeline-event-icon {
+    animation: scaleDown 0.3s linear;
+  }
+
+  .timeline-event:hover .timeline-event-thumbnail {
+    /* transform: rotate(-45deg); */
+    box-shadow: inset 12em 0 0 0 var(--navbar-color);
+  }
+  /* ------------------- Timeline ------------------- */
 }
