@@ -8,11 +8,12 @@
     />
     <title>OptiStera</title>
     <link rel="icon" type="image/png" href="../Icons/Logo_Grupp4.PNG" />
-    <script async src="script.js"></script>
     <!-- Det brukes defer sånn at alt skal loade inn før scriptet kjører -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- How to be human -->
+    <div class="full-wrapper"></div>
     <div class="header navbar-container">
       <div class="left-links">
         <a class="navbar-anchor logo" href="/grupper/D04-25/">OptiStera</a>
@@ -22,13 +23,13 @@
         <nav class="navbar">
           <ul class="navbar-list sidebar">
             <li class="navbar-item close" onclick="hideSidebar()">
-              <a class="navbar-anchor"
+              <a class="navbar-anchor" style="padding: 17.89px 10px"
                 ><svg
                   xmlns="http://www.w3.org/2000/svg"
-                  height="24px"
+                  height="33px"
+                  width="33px"
                   viewBox="0 -960 960 960"
-                  width="24px"
-                  fill="#e8eaed"
+                  fill="#ffffff"
                 >
                   <path
                     d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
@@ -37,10 +38,14 @@
               </a>
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/project">Project</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/project"
+                >Project</a
+              >
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/updates">Updates</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/updates"
+                >Updates</a
+              >
             </li>
             <li class="navbar-item">
               <a class="navbar-anchor" href="/grupper/D04-25/about">About</a>
@@ -48,10 +53,14 @@
           </ul>
           <ul class="navbar-list mainbar">
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/project/">Project</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/project/"
+                >Project</a
+              >
             </li>
             <li class="navbar-item">
-              <a class="navbar-anchor" href="/grupper/D04-25/updates">Updates</a>
+              <a class="navbar-anchor" href="/grupper/D04-25/updates"
+                >Updates</a
+              >
             </li>
             <li class="navbar-item">
               <a class="navbar-anchor" href="/grupper/D04-25/about">About</a>
@@ -98,18 +107,70 @@
     </div>
     <div class="card-container">
       <div class="blur-content">
-        <div class="content"></div>
+        <div class="content-box sys_overview">
+          <h2 class="heading">
+            System Overview <span class="line-title right"></span>
+          </h2>
+          <section class="content sys_overview">
+            <img
+              src="../Icons/project_img/sys_overview.png"
+              alt="System Overview"
+            />
+            <h2 class="optistera-text">
+              OptiStera <br />
+              Optimum Statera <br />
+              The perfect balance
+
+              <!-- Vi har valgt å jobbe med et prosjekt som omhandler optimalisering av styringssystemer for skip. Dette prosjektet er i samarbeid med Kongsberg Maritime. -->
+            </h2>
+          </section>
+        </div>
+
+        
+        <div class="content-box presentation">
+          <h2 class="heading">
+            Lorem Ipsum<span class="line-title right"></span>
+          </h2>
+          <section class="content">
+            <img
+            src="../Icons/project_img/sys_overview.png"
+              alt="System Overview"
+            />
+            <h2></h2>
+          </section>
+        </div>
+        
+        <div class="content-box about">
+          <h2 class="heading">
+            <span class="line-title left"></span>
+          </h2>
+          <img src="" alt="Gruppebilde" />
+          <section class="content"></section>
+        </div>
+        
+        <div class="content-box timeline">
+          <h2 class="heading"><span class="line-title left"></span>Timeline</h2>
+          <section class="content timeline">
+            <img src="../Icons/project_img/timeline.png" alt="Timeline" />
+          </section>
+        </div>
+        
+        
+
       </div>
     </div>
     <div class="main-footbar">
       <div class="logo footer">
-        <a href="/grupper/D04-25/" class="group-name" style="text-decoration: none"
+        <a
+          href="/grupper/D04-25/"
+          class="group-name"
+          style="text-decoration: none"
           >OptiStera</a
         >
         <p>Kort info</p>
       </div>
       <div class="pages footer">
-        <h4>Pages</h4>
+        <h4 class="indent-left">Pages</h4>
         <ul>
           <li><a href="/grupper/D04-25/">Home</a></li>
           <li><a href="/grupper/D04-25/project">Project</a></li>
@@ -119,16 +180,22 @@
       </div>
       <div class="info footer">
         <ul class="footer info list">
-          <li>i101</li>
           <!-- i101 er gruppenummeret -->
           <li>
+            <a href="https://maps.app.goo.gl/bRqnH8225dzKKmxY8" target="_blank"
+              >i101</a
+            >
+          </li>
+          <li>
+            <!-- Eposten til Magnus -->
             <a href="mailto:magnus.m.tveteraas@lyse.net" target="_blank"
               >magnus.m.tveteraas@lyse.net</a
             >
           </li>
-          <!-- Eposten til Magnus -->
-          <li>+ 47 00 00 00 00</li>
-          <!-- Telefonnummeret til Magnus -->
+          <li>
+            <!-- Telefonnummeret til Magnus -->
+            <a href="tel:+4794847795" target="_blank">+47 94 84 77 95</a>
+          </li>
         </ul>
       </div>
 
@@ -138,7 +205,9 @@
           style="text-decoration: none"
           href="https://www.kongsberg.com/maritime/"
           class="KM logo"
-          ><img src="../Icons/KONGSBERG_logo_horiz_neg.png" alt="Kongsberg logo"
+          ><img
+            src="../Icons/KONGSBERG_logo_horiz_neg.png"
+            alt="Kongsberg logo"
         /></a>
       </div>
 
@@ -153,4 +222,5 @@
       </div>
     </div>
   </body>
+  <script src="script.js"></script>
 </html>

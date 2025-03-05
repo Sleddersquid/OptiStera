@@ -139,6 +139,7 @@ a.navbar-anchor {
   font-weight: bold;
   border-radius: 5px;
   align-items: center;
+  justify-content: end;
 }
 
 /*  ------------- Social icons ------------- */
@@ -177,7 +178,7 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 55svw;
+  width: 50svw;
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);

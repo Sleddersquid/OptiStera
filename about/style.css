@@ -117,6 +117,7 @@ a.navbar-anchor {
   font-weight: bold;
   border-radius: 5px;
   align-items: center;
+  justify-content: end;
 }
 
 /*  ------------- Social icons ------------- */
@@ -153,7 +154,7 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 55svw;
+  width: 50svw;
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
@@ -232,8 +233,12 @@ section.content {
   /* flex-direction: row; */
 }
 
+section.content.data {
+  margin-bottom: 20px;
+}
+
 div.profile-container {
-  width: 670px;
+  width: auto;
   padding: 20px;
   display: flex;
   justify-content: center;
@@ -241,7 +246,7 @@ div.profile-container {
   flex-direction: row;
   gap: 20px;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
-  border-radius: 18px;
+  border-radius: 30px;
 }
 
 .profile-img {
@@ -474,11 +479,7 @@ a.USN.logo > img {
     flex-direction: column;
     gap: 10px;
     background-color: var(--navbar-color, rgba(0, 0, 0, 1));
-    border-radius: 12px;
-  }
-
-  div.profile-container.erik {
-    margin-bottom: 20px;
+    border-radius: 22px;
   }
 
   div.img-desprition > h3 {

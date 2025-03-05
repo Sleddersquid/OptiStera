@@ -1,3 +1,4 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
 /* ------------- Animations ------------- */
 /* @keyframes slide-fade-in {
   from {
@@ -14,15 +15,55 @@
   }
 } */
 
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,700);
+@keyframes scaleUp {
+  0% {
+    transform: rotate(-45deg) scale(1);
+    background-color: white;
+  }
+  50% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(45deg) scale(1);
+    background-color: black;
+  }
+}
 
-/* ------------- Animations ------------- */
+@keyframes scaleDown {
+  0% {
+    transform: rotate(45deg) scale(1);
+    background-color: black;
+  }
+  50% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(-45deg) scale(1);
+    background-color: white;
+  }
+}
+
+/* ------------- Timeline ------------- */
+/* From https://codepen.io/Fischaela/pen/NWNQKW */
+
+/* body {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: black;
+  font-size: 1em;
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  } */
 
 /*  ------------- Univrsall styling  ------------- */
+
 :root {
   --custromRem: 14px;
   --border-color: rgb(20, 89, 185);
   --navbar-color: rgb(22, 22, 22);
+  --colour-1: white;
+  --colour-2: rgb(22, 22, 22);
+  --colour-3: rgb(20, 89, 185);
 }
 
 * {
@@ -37,27 +78,38 @@ html::-webkit-scrollbar {
 }
 
 html {
-  width: 100lvw;
+  width: 100svw;
+  min-height: 100svh;
   background-color: rgba(0, 0, 0, 1);
-  -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   scroll-behavior: smooth;
 }
 
 body {
-  width: 100lvw;
+  width: 100svw;
+  min-height: 100svh;
+}
+
+div.full-wrapper {
+  position: fixed; /* Fixes the element to the screen */
+  top: 0;
+  left: 0;
+  width: 100svw;
+  height: 100svh;
   background-image: url("../Icons/background.jpg");
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: local;
   background-position: center;
+  z-index: -1;
 }
 
 /*  ------------- Univrsall styling  ------------- */
 
 /*  ------------- Navbar css ------------- */
-a.navbar-anchor.logo::before { /* , div.logo.footer > a.group-name::before */
+a.navbar-anchor.logo::before {
+  /* , div.logo.footer > a.group-name::before */
   /* adds logo before the "USN Horizon" */
   content: "";
   display: inline-block;
@@ -120,6 +172,7 @@ a.navbar-anchor {
   font-weight: bold;
   border-radius: 5px;
   align-items: center;
+  justify-content: end;
 }
 
 /*  ------------- Social icons ------------- */
@@ -137,7 +190,6 @@ a.navbar-anchor {
 
 a.github-icon-holder {
   padding: 11.5px 16.5px;
-
 }
 
 .social-icon.github-icon {
@@ -145,7 +197,6 @@ a.github-icon-holder {
   height: 24px;
   vertical-align: middle;
 }
-
 
 ul.navbar-list.sidebar {
   display: none;
@@ -158,11 +209,11 @@ nav.navbar > ul.sidebar {
   top: 0;
   right: 0;
   height: 100svh;
-  width: 55svw;
+  width: 50svw;
   z-index: 999;
   background-color: var(--navbar-color, rgba(0, 0, 0, 1));
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* -webkit-backdrop-filter: blur(20px); */
   box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
   align-items: flex-start;
@@ -185,7 +236,7 @@ ul.navbar-list.sidebar a {
 
 div.card-container {
   width: 100svw;
-  height: calc(100dvh - 59px);
+  /* height: auto; */
   overflow-y: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -195,13 +246,82 @@ div.card-container {
 }
 
 div.blur-content {
-  height: 100%;
+  /* height: auto; */
   width: min(80%, 70svw);
   background-color: rgba(6, 16, 31, 0.2);
   backdrop-filter: blur(17px);
   --webkit-backdrop-filter: blur(2px);
   box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.8);
   /* border-radius: 25px; */
+}
+/* ---------------- Main body ---------------- */
+
+div.content-box {
+  padding-top: 20px;
+}
+
+h2.heading {
+  display: flex;
+  align-items: center;
+  font-size: 40px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 3px;
+  margin: 0 50px 0 50px;
+}
+
+h2.heading > span.line-title {
+  flex-grow: 1;
+  height: 3px;
+  background-color: white;
+}
+
+h2.heading > span.line-title.left {
+  margin: 0 20px 0 10px;
+}
+
+h2.heading > span.line-title.right {
+  margin: 0 10px 0 20px;
+}
+
+section.content {
+  height: 30svh;
+  width: 100%;
+  margin-top: 10px;
+}
+
+section.content {
+  /* background:  */
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: row;
+  /* flex-direction: column; */
+}
+
+section.content > img {
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  position: relative;
+  height: 100%;
+}
+
+section.content.timeline {
+  height: auto;
+  margin-bottom: 30px;
+}
+
+section.content.timeline > img {
+  height: auto;
+  width: 91%;
+}
+
+
+section.content.sys_overview > h2 {
+  color: white;
+  width: 25%;
 }
 
 /* --------------- Footer --------------- */
@@ -217,10 +337,16 @@ div.main-footbar {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  flex-direction: row;
 }
 
 div.footer > ul {
   list-style-type: none;
+}
+
+div.footer.pages > h4.indent-left {
+  position: relative;
+  left: -15px;
 }
 
 div.footer * {
@@ -228,8 +354,6 @@ div.footer * {
   /* text-decoration: none; */
   line-height: 25px;
 }
-
-
 
 ul.footer.info.list {
   display: flex;
@@ -278,8 +402,6 @@ ul.footer.info.list > li:nth-child(3)::before {
   position: relative;
 }
 
-
-
 /* ---------------- LOGO FOOTER ---------------- */
 
 a.KM.logo > img {
@@ -288,22 +410,17 @@ a.KM.logo > img {
   margin-right: 5px;
 }
 
-
 a.USN.logo > img {
   width: 193px;
   vertical-align: middle;
   margin-right: 5px;
 }
 
-
-
-
 /* ----------- Media query. Dette er for mobil -----------*/
 @media screen and (max-width: 800px) {
   a {
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
   }
-
 
   div.navbar-container {
     padding: 0px 0px;
@@ -346,13 +463,25 @@ a.USN.logo > img {
     --webkit-backdrop-filter: blur(2px);
   }
 
+  h2.heading {
+    font-size: 22px;
+  }
+
+  h2.heading {
+    margin: 0 10px 0 15px;
+  }
+
+  h2.heading > span.line-title.right {
+    margin: 0 10px 0 10px;
+  }
+
   /* -------------- Footer -------------- */
   div.main-footbar {
     height: auto;
     /* display: flex; */
-    flex-wrap: wrap;  /* Allows items to wrap to the next row */
-    flex-direction: row;  /* Default row direction */
-    gap: 30px;  /* Adds spacing between items */
+    flex-wrap: wrap; /* Allows items to wrap to the next row */
+    flex-direction: row; /* Default row direction */
+    gap: 30px; /* Adds spacing between items */
     /* width: 200px; Adjust to control wrapping */
     padding: 20px 0;
   }
@@ -372,7 +501,7 @@ a.USN.logo > img {
   a.navbar-anchor:hover:not(.menu, .logo) {
     box-shadow: 5px 4px 15px rgba(104, 102, 102, 0.3),
       -5px 4px 15px rgba(104, 102, 102, 0.3);
-    transform: scale(100px);
+    /* transform: scale(100px); */
     background-color: rgba(29, 37, 193, 0.714);
   }
   /* ------------- Hover effect Navbar elements -------------*/
