@@ -300,7 +300,7 @@ h2.heading > span.line-title.right {
 }
 
 section.content {
-  height: 30svh;
+  height: auto;
   /* width: 100%; */
   margin-top: 10px;
 }
@@ -371,6 +371,10 @@ section.content.about > img.gruppe_bilde {
   width: 40%;
   height: 40%;
   object-fit: cover;
+}
+
+section.content > img.project.img, section.content > img.optistera.img {
+  height: 300px;
 }
 
 section.content.about {
@@ -565,6 +569,13 @@ a.USN.logo > img {
   width: 193px;
   vertical-align: middle;
   margin-right: 5px;
+}
+
+@media screen and (max-width: 1600px) {
+  div.wrapper.project, div.wrapper.optistera {
+    width: 55%;
+  }
+
 }
 
 /* ----------- Media query. Dette er for mobil -----------*/
