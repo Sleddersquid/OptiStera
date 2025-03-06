@@ -354,6 +354,7 @@ section.content > img {
 }
 
 section.content > h2.optistera-text {
+  width: 38%;
   font-size: 30px;
 }
 
@@ -574,6 +575,11 @@ a.USN.logo > img {
 @media screen and (max-width: 1600px) {
   div.wrapper.project, div.wrapper.optistera {
     width: 55%;
+  }
+
+  section.content > h2.optistera-text {
+    width: 42%;
+    font-size: 28px;
   }
 
 }
