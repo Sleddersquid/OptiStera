@@ -573,8 +573,8 @@ a.USN.logo > img {
 }
 
 @media screen and (max-width: 1600px) {
-  div.wrapper.project, div.wrapper.optistera {
-    width: 55%;
+  div.wrapper.about {
+    width: 40%;
   }
 
   section.content > h2.optistera-text {
@@ -647,8 +647,8 @@ a.USN.logo > img {
     width: 80%;
   }
 
-  section.content > h2 {
-    width: 60%;
+  section.content > h2.optistera-text, section.content > h2 {
+    width: 80%;
   }
 
   section.content.optistera {
@@ -658,6 +658,12 @@ a.USN.logo > img {
   section.content.project {
     flex-direction: column-reverse;
   }
+
+  section.content > img.optistera.img {
+    height: 250px;
+    width: auto;
+  }
+  
 
   section.content.about > img.gruppe_bilde {
     width: 85%;
@@ -671,6 +677,7 @@ a.USN.logo > img {
 
   div.wrapper.about {
     margin-bottom: 20px;
+    width: 80%;
   }
 
   .timeline {
@@ -682,7 +689,7 @@ a.USN.logo > img {
   }
 
   section.content > h2.optistera-text {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   h2 {
