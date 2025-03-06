@@ -329,10 +329,12 @@ section.content.timeline > img {
 
 section.content.sys_overview > h2 {
   color: white;
-  width: 33%;
+  width: 50%;
 }
 
-a.anchor.button {
+a.button {
+  transition: box-shadow 0.2s ease-in;
+  box-shadow: inset 4px 0 0 0em white;
   text-decoration: none;
   color: white;
   font-size: large;
@@ -342,6 +344,12 @@ a.anchor.button {
   border-right: 4px solid var(--border-color, rgb(6, 74, 168));
   border-left: 4px solid var(--border-color, rgb(6, 74, 168));
 }
+
+a.button:hover {
+  box-shadow: inset 12em 0 0 0 var(--navbar-color);
+  /* background-color: black; */
+}
+
 
 /* --------------- Footer --------------- */
 

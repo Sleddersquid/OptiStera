@@ -43,6 +43,15 @@
   }
 }
 
+@keyframes scanUp {
+  0% {
+    background-color: black;
+  }
+  100% {
+    background-color: white;
+  }
+}
+
 /* ------------- Timeline ------------- */
 /* From https://codepen.io/Fischaela/pen/NWNQKW */
 
@@ -62,7 +71,6 @@
   --border-color: rgb(20, 89, 185);
   --navbar-color: rgb(22, 22, 22);
   --colour-1: white;
-  --colour-2: rgb(22, 22, 22);
   --colour-3: rgb(20, 89, 185);
 }
 
@@ -320,6 +328,8 @@ div.wrapper {
 }
 
 a.button {
+  transition: box-shadow 0.2s ease-in;
+  box-shadow: inset 4px 0 0 0em white;
   text-decoration: none;
   color: white;
   font-size: large;
@@ -330,6 +340,11 @@ a.button {
   border-left: 4px solid var(--border-color, rgb(6, 74, 168));
 }
 
+a.button:hover {
+  box-shadow: inset 12em 0 0 0 var(--navbar-color);
+  /* background-color: black; */
+}
+
 section.content > img {
   background-size: contain;
   background-repeat: no-repeat;
@@ -337,6 +352,11 @@ section.content > img {
   position: relative;
   height: 100%;
 }
+
+section.content > h2.optistera-text {
+  font-size: 30px;
+}
+
 
 div.wrapper > h2 {
   color: white;
@@ -448,6 +468,9 @@ section.content.about {
   display: inline-block;
   margin-bottom: 1.2em;
   padding: 0.25em 1em 0.2em 1em;
+  border-radius: 7px;
+  border-right: 4px solid var(--border-color, rgb(6, 74, 168));
+  border-left: 4px solid var(--border-color, rgb(6, 74, 168));
 }
 
 /* ------------------- END timeline ------------------- */
@@ -608,12 +631,11 @@ a.USN.logo > img {
   }
 
   section.content > h2 {
-    width: 50%;
+    width: 60%;
   }
 
   section.content.optistera {
     align-items: center;
-
   }
 
   section.content.project {
@@ -642,7 +664,10 @@ a.USN.logo > img {
     font-size: 22px;
   }
 
-  h2.optistera-text,
+  section.content > h2.optistera-text {
+    font-size: 22px;
+  }
+
   h2 {
     font-size: 18px;
   }
