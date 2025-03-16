@@ -2,6 +2,7 @@
 
 // For the image recognition and
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/mat.hpp>
 // A interface between the camera and OpenCV
 #include <lccv.hpp>
 
@@ -119,7 +120,7 @@ int main()
     std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
 
     cv::Mat image, mask, HSV;
-    lccv::PiCamera cam;
+    lccv::PiCamera cam(1);
 
     // Was (0, 120, 120) and (10, 255, 255).
     // Lightings conditions such as sunlight might detect hands and face
@@ -174,7 +175,7 @@ int main()
             //     continue;
             // }
 
-            // if difference between old and new center is less than x, do not send data
+            // if difference between old and new center is less than x, do not send data ???
             // if do fi
 
             // std::cout << "New center.x: " << new_center.x << " New center.y: " << new_center.y << std::endl;
@@ -197,10 +198,9 @@ int main()
             // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
 
             // // quit on q button
-            if (cv::waitKey(1) == 'q')
-            {
+            if (cv::waitKey(1) == 'q') {
                 break;
-            } // Can be one-liner but for readability
+            }
         }
     }
 
