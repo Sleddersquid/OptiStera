@@ -108,7 +108,7 @@ void calibrate()
   }
 }
 
-float position_function(int t, float bias) {
+float positionFunction(int t, float bias) {
   return AMPLUTIDE * cos(((2 * PI * t) / PERIOD) + bias) + VERTICAL_SHIFT;
 }
 
@@ -220,7 +220,7 @@ void loop()
   for(int kth_motor; kth_motor < NUM_MOTORS; ++kth_motor) {
     time_set[kth_motor] = time_read;
 
-    desired_pos[kth_motor] = position_function(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
+    desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
 
     move_to_pos();
 
