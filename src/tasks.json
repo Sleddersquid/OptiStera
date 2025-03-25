@@ -1,0 +1,54 @@
+// This is a copy of the .vscode/task.json
+// This file is at the root directory where the vscode server is instantiated
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Compile and run main",
+			"type": "shell",
+			"command": "g++",
+			"problemMatcher": ["$gcc"],
+			"args": [
+				"${fileDirname}/${fileBasename}", // This is the file to compile, so .cpp file
+				"-o",
+				"${fileDirname}/executables/${fileBasenameNoExtension}", // This is the output file, so the executable
+				"-I/usr/include/opencv4", "-lopencv_aruco", "-lopencv_barcode", "-lopencv_bgsegm", "-lopencv_bioinspired", "-lopencv_ccalib", "-lopencv_cvv", "-lopencv_dnn_objdetect", "-lopencv_dnn_superres", "-lopencv_dpm", "-lopencv_face", "-lopencv_freetype", "-lopencv_fuzzy", "-lopencv_hdf", "-lopencv_hfs", "-lopencv_img_hash", "-lopencv_intensity_transform", "-lopencv_line_descriptor", "-lopencv_mcc", "-lopencv_quality", "-lopencv_rapid", "-lopencv_reg", "-lopencv_rgbd", "-lopencv_saliency", "-lopencv_shape", "-lopencv_stereo", "-lopencv_structured_light", "-lopencv_phase_unwrapping", "-lopencv_superres", "-lopencv_optflow", "-lopencv_surface_matching", "-lopencv_tracking", "-lopencv_highgui", "-lopencv_datasets", "-lopencv_text", "-lopencv_plot", "-lopencv_ml", "-lopencv_videostab", "-lopencv_videoio", "-lopencv_viz", "-lopencv_wechat_qrcode", "-lopencv_ximgproc", "-lopencv_video", "-lopencv_xobjdetect", "-lopencv_objdetect", "-lopencv_calib3d", "-lopencv_imgcodecs", "-lopencv_features2d", "-lopencv_dnn", "-lopencv_flann", "-lopencv_xphoto", "-lopencv_photo", "-lopencv_imgproc", "-lopencv_core", // Opencv and all its modules
+				"-lgpiodcxx", // For gpio controll
+				"-I/usr/include/libcamera", "-I/usr/local/lib",  "-llccv", // For link between camera module v3 and opencv
+				"-lopen62541pp", "-lopen62541", "-lopen62541pp", // For OPC-UA server
+				
+				// "-v"
+
+				// "&&",
+				// "${fileDirname}/executables/${fileBasenameNoExtension}" // This is the executable to run
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+		},
+		{
+			"label": "Compile cpp file",
+			"type": "shell",
+			"command": "g++",
+			"args": [
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}", // This is the output file, so the executable
+				"${fileDirname}/${fileBasename}" // This is the file to compile, so .cpp file
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Run compiled file",
+			"type": "shell",
+			"command": "${fileDirname}/${fileBasenameNoExtension}",
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+		}
+	]
+}

@@ -38,7 +38,7 @@ int main() {
             server,
             opcua::ObjectId::ObjectsFolder,
             parentNodeId,
-            "Camera Values",
+            "Object Values",
             opcua::ObjectAttributes{}
                 .setDisplayName({"en-US", "Camera Values"}),
             opcua::ReferenceTypeId::Organizes
@@ -49,7 +49,7 @@ int main() {
             server, // The server on which this little shitling is to be mounted on
             parentNodeId, // Parent folder
             cameraNodeXId, // id for this node, {namespace, id}
-            "Camera X", // Name for this node
+            "Position X", // Name for this node
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE) // READ and WRITE access
                 .setDataType<int>(), // Type of data, can be int 16, 32, 64 and etc.
@@ -63,20 +63,20 @@ int main() {
             server, // The server on which this little shitling is to be mounted on
             parentNodeId, // Parent folder
             cameraNodeYId, // id for this node, {namespace, id}
-            "Camera Y", // Name for this node
+            "Position Y", // Name for this node
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE) // READ and WRITE access
                 .setDataType<int>(), // Type of data, can be int 16, 32, 64 and etc.
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent
         ); // Possible to add a default variable to the node, before any write operation is done to the node
- 
+
     opcua::Result<opcua::NodeId> Node_Camera_Radius =
         opcua::services::addVariable(
             server, // The server on which this little shitling is to be mounted on
             parentNodeId, // Parent folder
             cameraNodeRadiusId, // id for this node, {namespace, id}
-            "Camera Radius", // Name for this node
+            "Radius", // Name for this node
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE) // READ and WRITE access
                 .setDataType<int>(), // Type of data, can be int 16, 32, 64 and etc.
