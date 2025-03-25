@@ -1,3 +1,7 @@
-# # Website for OptiStera
+# # Software for parallel manipulator
 
-Template: https://github.com/Sleddersquid/Sleddersquid.github.io/tree/main/Version_Current
+The final code for the control of parallel manipulator is under the folder Stuwaldo
+
+The folder Platform refers to another project.
+
+The rest of the folders are testing iteratively
