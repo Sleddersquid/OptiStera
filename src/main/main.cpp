@@ -119,7 +119,7 @@ int main()
     // -------------------------- OpenCV -------------------------- //
     std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
 
-    cv::Mat image, mask, HSV;
+    cv::Mat image, mask, HSV, pre_mask;
     lccv::PiCamera cam(1);
 
     // Was (0, 120, 120) and (10, 255, 255).
@@ -133,8 +133,12 @@ int main()
     cam.options->verbose = true;
     // cam.options->list_cameras = true;
 
-    //   cv::namedWindow("Video", cv::WINDOW_NORMAL);
-    //   cv::namedWindow("Mask", cv::WINDOW_NORMAL);
+      cv::namedWindow("Video", cv::WINDOW_NORMAL);
+      cv::namedWindow("Pre-Mask", cv::WINDOW_NORMAL);
+      cv::namedWindow("Post-Mask", cv::WINDOW_NORMAL);
+
+
+      bool first_save = false;
 
     cam.startVideo();
 
@@ -151,6 +155,10 @@ int main()
             cv::cvtColor(image, HSV, cv::COLOR_BGR2HSV);
 
             cv::inRange(HSV, hsv_lower, hsv_upper, mask);
+
+            pre_mask = mask.clone();
+            
+            cv::imshow("Pre-Mask", pre_mask);
 
             cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
             cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
@@ -184,7 +192,7 @@ int main()
             // image is the Image from the camera (stream)
             cv::imshow("Video", image);
             // mask is a black and white image from the InRange function
-            cv::imshow("Mask", mask);
+            cv::imshow("Post-Mask", mask);
 
             opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(new_center.x)));
             opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(new_center.y)));
@@ -197,8 +205,16 @@ int main()
             delay_server_iterate = server.runIterate();
             // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
 
-            // // quit on q button
-            if (cv::waitKey(1) == 'q') {
+            if (cv::waitKey(1) == 'q' && !first_save) {
+                cv::imwrite("pre-mask.jpg", pre_mask);
+                cv::imwrite("post-mask.jpg", mask);
+                cv::imwrite("image.jpg", image);
+                first_save = true;
+                std::cout << "Images saved" << std::endl;
+            }
+            
+            // quit on q button
+            if (cv::waitKey(1) == 'q' && first_save) {
                 break;
             }
         }
