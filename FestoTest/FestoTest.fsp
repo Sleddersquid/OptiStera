@@ -1,0 +1,27 @@
+﻿{
+  "Guid": "00000000-0000-0000-0000-000000000000",
+  "PreviewImagePath": "Resources/Bachelor",
+  "Description": null,
+  "CreationDate": "2025-02-19T09:57:39.5957547+01:00",
+  "ModifiedDate": "2025-03-26T09:43:49.1466059+01:00",
+  "CreationUser": "eirah",
+  "ModifiedUser": "eirah",
+  "Tools": [],
+  "Components": [
+    "0e44b880-90e6-40a4-86c2-c34009b98be6",
+    "ecfd2eb3-f4d2-4d47-9dc0-939a1cef56a7"
+  ],
+  "Resources": [
+    {
+      "Location": "ToolSuiteProject",
+      "Description": null,
+      "OwnerGuid": null,
+      "Metadata": {}
+    }
+  ],
+  "Metadata": {
+    "SystemVersions": "[{\"Type\":4,\"Configurations\":[{\"Key\":\"Version\",\"Value\":\"2.9.0.719\"},{\"Key\":\"RenderTier\",\"Value\":\"2\"},{\"Key\":\"InformationalVersion\",\"Value\":\"Rev. 6f8f2eaa75179d5d67d4983633f2878d6e5da085\"}]},{\"Type\":5,\"Configurations\":[{\"Key\":\"Name\",\"Value\":\"CMMT-ST Plug-in\"},{\"Key\":\"Version\",\"Value\":\"2.9.0.976\"},{\"Key\":\"ToolGUID\",\"Value\":\"dd9cd61e-7fbb-4785-87aa-0e774d93878e\"}]},{\"Type\":6,\"Configurations\":[{\"Key\":\"Name\",\"Value\":\"Scan\"},{\"Key\":\"Version\",\"Value\":\"2.9.0.190\"},{\"Key\":\"ToolGUID\",\"Value\":\"bb65b1ea-a5b7-470b-97c2-97c614d315ac\"}]}]",
+    "Versions": "[\"2.9.0.719\"]"
+  },
+  "FormatVersion": "2.00"
+}
