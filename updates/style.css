@@ -348,8 +348,12 @@ h1, h2, h3, h4, h5, h6 {
 	top: 0;
 	bottom: 30px;
 	position: absolute;
-	border-top: 3px solid #CCD5DB;
-	border-bottom: 3px solid #CCD5DB;
+	border-top: 3px solid white;
+	border-bottom: 3px solid white;
+}
+
+.period:first-child .timeline-marker:before {
+  border-top: 0 solid;
 }
 
 .period .timeline-marker:after {
