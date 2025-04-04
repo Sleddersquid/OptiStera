@@ -262,7 +262,6 @@ int main()
 
             kalmanBall = kalmanKF.Predict(enclosingCenter);
 
-
             // Point p1 = Point(kalmanBall.x-10, kalmanBall.y-10); //Test 3.3
             // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); //Test 3.3
             Point p1 = Point(kalmanBall.x - 10, kalmanBall.y - 10); // Test 3.3
