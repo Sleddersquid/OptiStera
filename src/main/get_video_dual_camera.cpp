@@ -15,6 +15,10 @@ int main() {
     cv::Mat image_camera1, image_camera2;
     lccv::PiCamera cam1(0), cam2(1);
 
+    cv::namedWindow("Camera 1", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Camera 2", cv::WINDOW_AUTOSIZE);
+
+
     cam1.options->video_width = CAMERA_WIDTH;
     cam1.options->video_height = CAMERA_HEIGHT;
     cam1.options->framerate = CAMERA_FRAMERATE;
@@ -36,6 +40,9 @@ int main() {
         if (!cam2.getVideoFrame(image_camera2, 1000)) {
             std::cerr << "Timeout error" << std::endl;
         }
+
+        cv::rotate(image_camera1, image_camera1, cv::ROTATE_90_CLOCKWISE);
+        cv::rotate(image_camera2, image_camera2, cv::ROTATE_90_COUNTERCLOCKWISE);
 
         cv::imshow("Camera 1", image_camera1);
         cv::imshow("Camera 2", image_camera2);
