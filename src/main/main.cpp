@@ -14,7 +14,6 @@
 #include "includes/kalman.cpp"
 #include "includes/kalman.hpp"
 
-
 // Sources
 // From image_recognition/first_iteration/color_recognition.cpp
 // From image_recognition/main/server_services_node.cpp
@@ -28,9 +27,6 @@
  * @param contour - The contour to calculate the center of
  * @return The center of the contour as cv::Point
  */
-
-
-
 
 cv::Point calculateCenter(const std::vector<cv::Point> &contour)
 {
@@ -51,19 +47,24 @@ int main()
     // cv::Point old_center(0, 0);
 
     float radius;
-    cv::Point2f enclosingCenter;
 
     auto start = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_time = std::chrono::duration<double, std::milli>(end - start);
 
-    uint32_t delay_server_iterate = 0;
+    // uint32_t delay_server_iterate = 0;
 
     // -------------------------- OPCUA -------------------------- //
     opcua::ServerConfig config;
     config.setApplicationName("open62541pp server objectRecgonition");
     config.setApplicationUri("urn:open62541pp.server.application");
     config.setProductUri("https://open62541pp.github.io");
+
+    UA_DurationRange publishingIntervalLimits_custom;
+    publishingIntervalLimits_custom.min = 20;
+    publishingIntervalLimits_custom.max = 25;
+
+    config->publishingIntervalLimits = publishingIntervalLimits_custom;
 
     opcua::Server server(std::move(config));
 
@@ -128,27 +129,35 @@ int main()
     // -------------------------- OpenCV -------------------------- //
     std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
 
-    cv::Mat mask, HSV, sub_image;
+    cv::Mat mask_o, mask_r, HSV, sub_image, mask;
     cv::Rect roi;
-    lccv::PiCamera cam(1);
+    lccv::PiCamera cam(0);
 
     // Was (0, 120, 120) and (10, 255, 255).
     // Lightings conditions such as sunlight might detect hands and face
-    cv::Scalar hsv_lower(0, 150, 120);  // 0, 150, 50
-    cv::Scalar hsv_upper(10, 255, 200); // 15, 255, 255
+    cv::Scalar hsv_lower(0, 120, 120);  // 0, 150, 50
+    cv::Scalar hsv_upper(15, 255, 255); // 15, 255, 255
+
+    // cv::Scalar hsv_upper_o(179, 255, 255);  // 0, 150, 50
+    // cv::Scalar hsv_lower_o(177, 92, 89); // 15, 255, 255
+
+    // cv::Scalar hsv_upper_r(6, 236, 255); // 15, 255, 255
+    // cv::Scalar hsv_lower_r(0, 174, 163);  // 0, 150, 50
 
     cam.options->video_width = CAMERA_WIDTH;
     cam.options->video_height = CAMERA_HEIGHT;
     cam.options->framerate = CAMERA_FRAMERATE;
     cam.options->verbose = true;
+    cam.options->setExposureMode(Exposure_Modes::EXPOSURE_SHORT);
+    cam.options->setWhiteBalance(WhiteBalance_Modes::WB_INDOOR);
     // cam.options->list_cameras = true;
 
-    cv::namedWindow("Video", cv::WINDOW_NORMAL);
-    cv::namedWindow("Post-Mask", cv::WINDOW_NORMAL);
+    // cv::namedWindow("Post-Mask", cv::WINDOW_NORMAL);
+    // cv::namedWindow("Video", cv::WINDOW_AUTOSIZE);
 
-    bool object_found = false;
-    bool first_object_find = false;
-    float radius_multiplier = 2.0f;
+    // bool object_found = false;
+    // bool first_object_find = false;
+    // float radius_multiplier = 2.0f;
     cv::Point old_refrence_point;
     // int x_cut, y_cut, x_height, y_width, x_noe, y_noe;
     cv::Point start_point(0, 0), end_point(0, 0);
@@ -159,28 +168,27 @@ int main()
 
     // ----------------- KALMANFILTER ----------------- //
 
-
     //**********************************************************
-	// PARAMETRIZATION: KALMAN INIT
-	//**********************************************************
-	// First parameter sets the predefenied values for:
-	// 1 -> Constant Velocity Model
-	// 2 -> Accelaration Model
-	//**********************************************************
-	int iKalmanMode = 2;
-    int iDebugMode = true;
+    // PARAMETRIZATION: KALMAN INIT
+    //**********************************************************
+    // First parameter sets the predefenied values for:
+    // 1 -> Constant Velocity Model
+    // 2 -> Accelaration Model
+    //**********************************************************
+    int iKalmanMode = 1;
+    int iDebugMode = false;
 
     int iTextOffsetCorrection_1 = 15; // PutText function has a small offset in y axis depending on the simbol you print (* or _)
-	int iTextOffsetCorrection_2 = 7;
+    int iTextOffsetCorrection_2 = 7;
 
     cv::Scalar K_corr_Color(0, 0, 255);
-	cv::Scalar K_pred_Color(0, 255, 0);
-	cv::Scalar GT_Color(255, 0, 0);
+    cv::Scalar K_pred_Color(0, 255, 0);
+    cv::Scalar GT_Color(255, 0, 0);
 
-    int iTextSize1 = 1;		// Test 3.1 and 3.3
-    int iTextSize2 = 1.5;	// Test 3.1 and 3.3
+    int iTextSize1 = 1;     // Test 3.1 and 3.3
+    int iTextSize2 = 1.5;   // Test 3.1 and 3.3
     int iTextThickness = 1; // Test 3.1 and 3.3
-    int iTestsOffset = 20;	// Test 3.1 and 3.3
+    int iTestsOffset = 20;  // Test 3.1 and 3.3
 
     int iFrameNum = 0;
 
@@ -188,6 +196,11 @@ int main()
 
     kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
 
+    int image_count = 0;
+    int frame_count = 0;
+    float fps = -1;
+
+    bool enable_print = false;
 
     while (true)
     {
@@ -198,42 +211,35 @@ int main()
         }
         else
         {
-            // start = std::chrono::high_resolution_clock::now();
-            // This is from the python file "test_opencv.py" and https://github.com/hcglhcgl/BallDetection/blob/master/balls.cpp
-
-            // CHECK if point within rectanle. But would not work on first iter
-            // if object found, cut image x-, y- to x+, y+
-            
-            // if (object_found)
-            // {
-
-            //     start_point.x = std::max(0.f, std::abs(new_center.x - radius_multiplier*((int)radius)));
-            //     start_point.y = std::max(0.f, std::abs(new_center.y - radius_multiplier*((int)radius)));
-            //     end_point.x = std::min(1280.f, std::abs(new_center.x + radius_multiplier*((int)radius)));
-            //     end_point.y = std::min(720.f, std::abs(new_center.y + radius_multiplier*((int)radius)));
-    
-            //     std::cout << "start_point.x: " << start_point.x << " start_point.y: " << start_point.y << " radius: " << ((int)radius) << std::endl;
-            //     std::cout << "end_point.x: " << end_point.x << " end_point.y: " << end_point.y << std::endl;
-
-            //     roi = cv::Rect(start_point, end_point);
-
-            //     image = image(roi);
-
-            // }
-            
-            // std::cout << "Image size: " << image.size() << std::endl;
-
-            if(image.empty())
+            if (image.empty())
             {
                 std::cerr << "Image is empty" << std::endl;
                 continue;
             }
 
+            frame_count++;
+
+            cv::Point2f enclosingCenter;
+
             cv::cvtColor(image, HSV, cv::COLOR_BGR2HSV);
 
+            cv::GaussianBlur(HSV, HSV, cv::Size(7, 7), 0, 0);
+            
             cv::inRange(HSV, hsv_lower, hsv_upper, mask);
 
-            // cv::imshow("Pre-Mask", pre_mask);
+            // cv::inRange(HSV, hsv_lower_o, hsv_upper_o, mask_o);
+            // cv::inRange(HSV, hsv_lower_r, hsv_upper_r, mask_r);
+            
+            // mask = mask_o | mask_r;
+            
+            // if (cv::waitKey(1) == 32)
+            // {
+            //     // std::string filename = "RGB" + std::to_string(image_count++) + ".jpg";
+            //     cv::imwrite("RBGB.jpg", image);
+            //     cv::imwrite("HSV.jpg", HSV);
+            //     std::cout << "Saved image: " << std::endl;
+            // }
+            // // cv::imshow("Pre-Mask", pre_mask);
 
             cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
             cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
@@ -245,69 +251,99 @@ int main()
             if (!contours.empty())
             {
                 largestContour = *std::max_element(contours.begin(), contours.end(),
-                                                                          [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b)
-                                                                          {
-                                                                              return cv::contourArea(a) < cv::contourArea(b);
-                                                                          }); // Lambda function. Finds the largest contour
+                                                   [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b)
+                                                   {
+                                                       return cv::contourArea(a) < cv::contourArea(b);
+                                                   }); // Lambda function. Finds the largest contour
 
                 cv::minEnclosingCircle(largestContour, enclosingCenter, radius);
             }
 
-            cv::circle(image, enclosingCenter, radius, cv::Scalar(0, 255, 0), 2); // Draw on image, at point at enclosingCenter,
+            // std::cout << "Rasius: " << radius << std::endl;
+
+            if (frame_count >= 100)
+            {
+                auto end = std::chrono::high_resolution_clock::now();
+                fps = frame_count * 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+                frame_count = 0;
+                start = std::chrono::high_resolution_clock::now();
+            }
+
+            if (fps > 0)
+            {
+                std::ostringstream fps_label;
+                fps_label << std::fixed << std::setprecision(2);
+                fps_label << "FPS: " << fps;
+                std::string fps_label_str = fps_label.str();
+                std::cout << fps_label_str << std::endl;
+
+                // cv::putText(image, fps_label_str.c_str(), cv::Point(CAMERA_HEIGHT - 50, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+            }
+
+            // std::cout << "Ball.x =  " << enclosingCenter.x << std::endl
+            //      << "Ball.y =  " << enclosingCenter.y << std::endl;
+            // std::cout << "KBall.x = " << kalmanBall.x << std::endl
+            //      << "KBall.y = " << kalmanBall.y << std::endl;
+
+            // if (radius < 39.0f) {
+            //     enclosingCenter = cv::Point(0, 0);
+            // }
 
             // new_center = calculateCenter(largestContour);
 
-            std::cout << "enclosing centre.x: " << enclosingCenter.x << " enclosing centre.y: " << enclosingCenter.y << std::endl;
+            // enclosingCenter.x = iFrameNum*4 % CAMERA_WIDTH;
+            // enclosingCenter.y = 512;
+
+            // enclosingCenter.x = 0;
+            // enclosingCenter.y = 0;
+
+            // enclosingCenter = new_center;
+
+            // std::cout << "enclosing centre.x: " << enclosingCenter.x << " enclosing centre.y: " << enclosingCenter.y << std::endl;
             // std::cout << "New center.x: " << new_center.x << " New center.y: " << new_center.y << std::endl;
 
-            kalmanBall = kalmanKF.Predict(enclosingCenter);
+            kalmanBall = kalmanKF.Predict((cv::Point2i)enclosingCenter);
 
             // Point p1 = Point(kalmanBall.x-10, kalmanBall.y-10); //Test 3.3
-            // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); //Test 3.3
-            Point p1 = Point(kalmanBall.x - 10, kalmanBall.y - 10); // Test 3.3
-            Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); // Test 3.3
+            // // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); //Test 3.3
+            // Point p1 = Point(kalmanBall.x - 10, kalmanBall.y - 10); // Test 3.3
+            // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); // Test 3.3
 
-            if (kalmanKF.getStatus() == "Predicted") 
-            {
-                cv::rectangle(image, p1, p2, K_pred_Color, 1, 8, 0);
-            }
-            else
-            {
-                cv::rectangle(image, p1, p2, K_corr_Color, 1, 8, 0);
-            }
+            // // std::cout << kalmanKF.getStatus() << std::endl;
 
-            for (int i = 0; i < kalmanKF.getGroundTruthList().size(); i++)
-            {
-                putText(image, "o", Point(kalmanKF.getGroundTruthList()[i].x, kalmanKF.getGroundTruthList()[i].y + iTextOffsetCorrection_2), FONT_HERSHEY_COMPLEX, iTextSize2, GT_Color, iTextThickness);
-            }
-            for (int i = 0; i < kalmanKF.getPredictedList().size(); i++)
-            {
-                putText(image, "*", Point(kalmanKF.getPredictedList()[i].x, kalmanKF.getPredictedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_pred_Color, iTextThickness);
-            }
-            for (int i = 0; i < kalmanKF.getCorrectedList().size(); i++)
-            {
-                putText(image, "*", Point(kalmanKF.getCorrectedList()[i].x, kalmanKF.getCorrectedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_corr_Color, iTextThickness);
-            }
+            // if (kalmanKF.getStatus() == "Predicted")
+            // {
+            //     cv::rectangle(image, p1, p2, K_pred_Color, 1, 8, 0);
+            // }
+            // else
+            // {
+            //     cv::rectangle(image, p1, p2, K_corr_Color, 1, 8, 0);
+            // }
 
-            if (iDebugMode)
-                cout << "Ball.x =  " << enclosingCenter.x << endl
-                     << "Ball.y =  " << enclosingCenter.y << endl;
-            if (iDebugMode)
-                cout << "KBall.x = " << kalmanBall.x << endl
-                     << "KBall.y = " << kalmanBall.y << endl;
+            // for (int i = 0; i < kalmanKF.getGroundTruthList().size(); i++)
+            // {
+            //     putText(image, "o", Point(kalmanKF.getGroundTruthList()[i].x - 7, kalmanKF.getGroundTruthList()[i].y + iTextOffsetCorrection_2), FONT_HERSHEY_COMPLEX, iTextSize2, GT_Color, iTextThickness);
+            // }
+            // for (int i = 0; i < kalmanKF.getPredictedList().size(); i++)
+            // {
+            //     putText(image, "*", Point(kalmanKF.getPredictedList()[i].x, kalmanKF.getPredictedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_pred_Color, iTextThickness);
+            // }
+            // for (int i = 0; i < kalmanKF.getCorrectedList().size(); i++)
+            // {
+            //     putText(image, "*", Point(kalmanKF.getCorrectedList()[i].x - 5, kalmanKF.getCorrectedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_corr_Color, iTextThickness);
+            // }
 
-                     putText(image, "Ground Truth (ball)", Point(10, 15 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, GT_Color, iTextThickness);   // Test 3.1 and 3.3
-                     putText(image, "Kalman Prediction", Point(10, 40 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_pred_Color, iTextThickness); // Test 3.1 and 3.3
-                     putText(image, "Kalman Corrected", Point(10, 65 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_corr_Color, iTextThickness);  // Test 3.1 and 3.3
- 
-                     // putText(image, "Ground Truth (ball)", Point(10, 50 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, GT_Color, iTextThickness);//Test 3.2
-                     // putText(image, "Kalman Prediction", Point(10, 100 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_pred_Color, iTextThickness);//Test 3.2
-                     // putText(image, "Kalman Corrected", Point(10, 150 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_corr_Color, iTextThickness);//Test 3.2
- 
-                     // putText(image, "Frame " + to_string(iFrameNum), Point(10, 200 + iTestsOffset), FONT_HERSHEY_COMPLEX, iTextSize1, Scalar(255,255,255), iTextThickness);//Test 3.2
-                     putText(image, "Frame " + to_string(iFrameNum), Point(10, 90 + iTestsOffset), FONT_HERSHEY_COMPLEX, iTextSize1, Scalar(255, 255, 255), iTextThickness); // Test 3.2 and 3.3
+            // putText(image, "Ground Truth (ball)", Point(10, 15 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, GT_Color, iTextThickness);   // Test 3.1 and 3.3
+            // putText(image, "Kalman Prediction", Point(10, 40 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_pred_Color, iTextThickness); // Test 3.1 and 3.3
+            // putText(image, "Kalman Corrected", Point(10, 65 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_corr_Color, iTextThickness);  // Test 3.1 and 3.3
 
+            // // // putText(image, "Ground Truth (ball)", Point(10, 50 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, GT_Color, iTextThickness);//Test 3.2
+            // // // putText(image, "Kalman Prediction", Point(10, 100 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_pred_Color, iTextThickness);//Test 3.2
+            // // // putText(image, "Kalman Corrected", Point(10, 150 + iTestsOffset), FONT_HERSHEY_SIMPLEX, iTextSize1, K_corr_Color, iTextThickness);//Test 3.2
 
+            // // // putText(image, "Frame " + to_string(iFrameNum), Point(10, 200 + iTestsOffset), FONT_HERSHEY_COMPLEX, iTextSize1, Scalar(255,255,255), iTextThickness);//Test 3.2
+            // putText(image, "Frame " + to_string(iFrameNum), Point(10, 90 + iTestsOffset), FONT_HERSHEY_COMPLEX, iTextSize1, Scalar(255, 255, 255), iTextThickness); // Test 3.2 and 3.3
 
             // // No object found
             // if (new_center.x == 0 && new_center.y == 0) {
@@ -336,26 +372,29 @@ int main()
 
             // std::cout << "New center.x: " << new_center.x << " New center.y: " << new_center.y << std::endl;
 
-            // cv::circle(image, new_center, 4, cv::Scalar(0, 0, 255), -1); // Draw on mask, at point new_center
-            cv::circle(image, enclosingCenter, 4, cv::Scalar(0, 0, 255), -1); // Draw on mask, at point new_center
-            // image is the Image from the camera (stream)
+            // // cv::circle(image, new_center, 4, cv::Scalar(0, 0, 255), -1); // Draw on image, at point new_center
+            // cv::circle(image, enclosingCenter, 4, cv::Scalar(0, 0, 255), -1); // Draw on image, at point new_center
+            // cv::circle(image, enclosingCenter, radius, cv::Scalar(0, 255, 0), 2); // Draw on image, at point at enclosingCenter,
+            // // image is the Image from the camera (stream)
 
-            cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
-            cv::rotate(mask, mask, cv::ROTATE_90_COUNTERCLOCKWISE);
+            // // cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
+            // // cv::rotate(mask, mask, cv::ROTATE_90_COUNTERCLOCKWISE);
 
-            cv::imshow("Video", image);
+            // cv::imshow("Post-Mask", mask);
+            // cv::imshow("Video", image);
+
             // mask is a black and white image from the InRange function
-            cv::imshow("Post-Mask", mask);
 
-            opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(new_center.x)));
-            opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(new_center.y)));
+            opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kalmanBall.x)));
+            opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(kalmanBall.y)));
             opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant((int)radius)));
 
             // auto end = std::chrono::high_resolution_clock::now();
 
             // elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-            delay_server_iterate = server.runIterate();
+            server.runIterate();
+            // delay_server_iterate = server.runIterate();
             // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
 
             // To save images.
@@ -380,9 +419,9 @@ int main()
     server.stop();
 
     cam.stopVideo();
-    cv::destroyWindow("Video");
-    cv::destroyWindow("Mask");
-    cv::destroyAllWindows();
+    // cv::destroyWindow("Video");
+    // cv::destroyWindow("Mask");
+    // cv::destroyAllWindows();
     std::cout << "End of opencv" << std::endl;
 
     std::cout << "End of file!" << std::endl;

@@ -6,9 +6,40 @@
 using namespace cv;
 using namespace std;
 
-namespace kalmantracking {
 
+namespace kalmantracking {
+	
+	template<typename T>
+	class Max_Size_Vector {
+	private:
+		unsigned long _max_size;
+		std::vector<T> _vec;
+	public:
+		Max_Size_Vector();
+		Max_Size_Vector(unsigned long max_size);
+		
+		void push_back(const T _var);
+		std::vector<T> getVector();
+		unsigned long size();
+		T& operator[](int i);
+	
+	};
+	
 	class kalman {
+	private:
+		cv::KalmanFilter _k;
+		cv::Mat _state;
+		cv::Mat _measurement;
+		int _stateTransitionSize = 4;
+		int _measurementsSize = 2;
+		int _controlSize = 0;
+		int _type = CV_32F;
+		bool _initialized = false;
+		bool _bFullDebugOn = false;
+		Max_Size_Vector<cv::Point> _predicted_list;
+		Max_Size_Vector<cv::Point> _corrected_list;
+		Max_Size_Vector<cv::Point> _GroundTruth_list;
+		string _status;
 
 	public:
 		kalman();
@@ -25,17 +56,16 @@ namespace kalmantracking {
 
 		Point Predict(Point ball);
 
-
 		//  getters for trajectory
-		std::vector<cv::Point> getPredictedList() const {
+		Max_Size_Vector<cv::Point> getPredictedList() const {
 			return _predicted_list;
 		}
 
-		std::vector<cv::Point> getCorrectedList() const {
+		Max_Size_Vector<cv::Point> getCorrectedList() const {
 			return _corrected_list;
 		}
 
-		std::vector<cv::Point> getGroundTruthList() const {
+		Max_Size_Vector<cv::Point> getGroundTruthList() const {
 			return _GroundTruth_list;
 		}
 
@@ -47,20 +77,6 @@ namespace kalmantracking {
 			this->_status = status;
 		}
 
-	private:
-		cv::KalmanFilter _k;
-		cv::Mat _state;
-		cv::Mat _measurement;
-		int _stateTransitionSize = 4;
-		int _measurementsSize = 2;
-		int _controlSize = 0;
-		int _type = CV_32F;
-		bool _initialized = false;
-		bool _bFullDebugOn = false;
-		std::vector<cv::Point> _predicted_list;
-		std::vector<cv::Point> _corrected_list;
-		std::vector<cv::Point> _GroundTruth_list;
-		string _status;
 	};
 }
 

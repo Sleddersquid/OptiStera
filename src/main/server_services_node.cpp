@@ -3,6 +3,9 @@
 #include <open62541pp/server.hpp>
 #include <open62541pp/node.hpp>
 
+#include <open62541/server.h>
+#include <open62541/config.h>
+
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -18,6 +21,16 @@ int main() {
     config.setApplicationName("open62541pp server objectRecgonition");
     config.setApplicationUri("urn:open62541pp.server.application");
     config.setProductUri("https://open62541pp.github.io");
+
+    UA_DurationRange publishingIntervalLimits_custom;
+    publishingIntervalLimits_custom.min = 25;
+    publishingIntervalLimits_custom.max = 50;
+
+    config->publishingIntervalLimits = publishingIntervalLimits_custom;
+
+
+
+
     
     // node ids -> {namespace, id}
     opcua::NodeId parentNodeId = {1, 1000};
