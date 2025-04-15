@@ -1,3 +1,6 @@
+
+// From https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-serial-plotter/
+
 int random_variable;
 int static_variable = 500;
 
