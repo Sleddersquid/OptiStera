@@ -40,8 +40,8 @@ volatile platform_state current_state = STOPPING;
 platform_state next_state = IDLE; 
 
 // The period sets the speed for the actuators
-int period = MODERATE;
-int next_period = period;
+uint8_t period = MODERATE;
+uint8_t next_period = period;
 
 uint32_t time_read, last_time;
 uint32_t time_set[NUM_MOTORS];
@@ -58,7 +58,7 @@ int16_t zero_readings[NUM_MOTORS];  // Readings from fully retracted position
 // If no calibration is done, assume it has been done previously
 bool calibration_valid = true;  // Set to false if calibration is not valid
 
-const int debounce_interval = 200;
+const uint8_t debounce_interval = 200;
 volatile unsigned long last_interrupt = 0;
 
 void change_state() {
@@ -79,7 +79,7 @@ void change_state() {
   }
 }
 
-float positionFunction(int t, float bias) {
+float positionFunction(int t, float bias) { // l_k(t) with k = 1,2,3 and t (ms)
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
