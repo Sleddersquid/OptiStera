@@ -1,5 +1,8 @@
 #pragma once
 
+#define RED_LED_PIN 51
+#define GREEN_LED_PIN 53
+#define BLUE_LED_PIN 49
 
 #define LEFT_SWITCH_PIN 40
 #define RIGTH_SWITCH_PIN 42

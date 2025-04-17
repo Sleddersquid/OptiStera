@@ -17,8 +17,6 @@
 // ----------- LCD DISPLAY ------------ //
 #define LCD_ADDRESS 0x27
 
-
-
 // ----------- GOOD PLACEMENT ------------ //
 
 #define RESET_DELAY 5000
@@ -51,7 +49,7 @@ const float MOTOR_BIAS[NUM_MOTORS] = {MOTOR_BIAS_1, MOTOR_BIAS_2, MOTOR_BIAS_3};
 #define MIN_PWM 60
 #define MAX_PWM 255 // 255
 
-#define POS_THRESHOLD 3
+#define POS_THRESHOLD 4
 
 #define OFF_THRESHOLD 500
 int16_t ZERO_POS[NUM_MOTORS]      = {46, 48, 44};
