@@ -11,9 +11,12 @@
 // 4. Is it a concern that the lights light up when reset is done?
 // 5. IMPORTANT: Add led/light on the button
 
+// #include <LiquidCrystal_I2C.h>
+
+// LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
+
 // Enum for different speeds for the actuator
 uint32_t blink_interval = 700, previousMillis, current_time;  // in ms
-
 bool ledState = 1;
 
 enum MotorSpeed {
@@ -33,7 +36,7 @@ enum platform_state {
 
 // When the program starts, the actuators reset and go to IDLE
 volatile platform_state current_state = STOPPING; // Will be populated at iteration of loop
-platform_state next_state = STOPPING; 
+platform_state next_state = STOPPING;
 
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
@@ -47,6 +50,7 @@ uint16_t current_pos[NUM_MOTORS];  // Ranges from 0..1023
 int16_t pos_diff[NUM_MOTORS];      // Ranges from -1023..1023
 uint8_t pwm_value[NUM_MOTORS];     // Ranges from 0..255
 bool direction[NUM_MOTORS];        // 0 = RETRACT, 1 = EXTEND
+int16_t reset_speed[NUM_MOTORS];   // Speed of the motors when resetting
 
 // Only used for calibration
 int16_t end_readings[NUM_MOTORS];   // Readings from fully extended position
@@ -143,14 +147,26 @@ void calibrate(bool run_calibration) {
   }
 }
 
-void move_to_pos(uint32_t set_time) {
+void move_to_pos(uint32_t set_time, bool reset) {
   // String to_lcd_display = "";
 
-  // Determine the position for each actuator
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-    time_set[kth_motor] = set_time % period;
-    desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
+  if (reset) {
+    for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
+      if (pos_diff[kth_motor] > 0) {
+        time_set[kth_motor] = (SLOW/2 + set_time) % period;
+        SerialUSB.println("FUCKKKK");
+      } else {}
+      desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
+    }
   }
+  else {
+    for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
+      time_set[kth_motor] = set_time % period;
+      desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
+    }
+  }
+
+  // Determine the position for each actuator
 
   // Get the current positon of all actuators and set dirrection based of the
   for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
@@ -158,8 +174,12 @@ void move_to_pos(uint32_t set_time) {
 
     pos_diff[kth_motor] = desired_pos[kth_motor] - current_pos[kth_motor];
 
+    // to_lcd_display += String(kth_motor) + ":" + String(pos_diff[kth_motor] * PWM_GAIN) + " ";
+
+    // SerialUSB.println(to_lcd_display.length());
+
     // Se nærmere på
-    if (current_pos[kth_motor] < desired_pos[kth_motor]) {
+    if (pos_diff[kth_motor] > 0) {
       direction[kth_motor] = EXTEND;
     } else {
       direction[kth_motor] = RETRACT;
@@ -176,29 +196,6 @@ void move_to_pos(uint32_t set_time) {
       analogWrite(MOTOR_PWM_PINS[kth_motor], constrain(abs(pos_diff[kth_motor]* PWM_GAIN), MIN_PWM, MAX_PWM));
     } else {
       analogWrite(MOTOR_PWM_PINS[kth_motor], 0);
-    }
-  }
-}
-
-// Will retract all the motors
-void reset_motors(uint16_t point_to_reset_to) {
-  int motor_count_reset = 0;
-
-  // Retract all actuators
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-    digitalWrite(MOTOR_DIR_PINS[kth_motor], RETRACT);
-    analogWrite(MOTOR_PWM_PINS[kth_motor], MAX_PWM / 2);  // Running at half speed
-  }
-
-  // While not all motors are fully reset, read each motor individually and
-  while (motor_count_reset != NUM_MOTORS) {
-    motor_count_reset = 0;
-    for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-      current_pos[kth_motor] = map(read_analogue_avg(MOTOR_POT_PINS[kth_motor]), ZERO_POS[kth_motor], END_POS[kth_motor], MIN_POS, MAX_POS);
-
-      if (current_pos[kth_motor] - point_to_reset_to < POS_THRESHOLD) {
-        motor_count_reset++;
-      }
     }
   }
 }
@@ -299,7 +296,7 @@ void loop() {
       // SerialUSB.print("Time: ");
       // SerialUSB.println(current_time);
 
-      move_to_pos(current_time);
+      move_to_pos(current_time, false);
 
 
       // if (current_time - previousMillis >= blink_interval) {
@@ -322,21 +319,22 @@ void loop() {
 
     case RESET:
       next_state = SET_TIME;
-
       digitalWrite(BLUE_LED_PIN, HIGH);
       digitalWrite(RED_LED_PIN, LOW);
 
-      reset_motors(VERTICAL_SHIFT - AMPLUTIDE);
+      current_time = time_read - last_time;
+
+      move_to_pos(current_time, true);
+
       break;
 
     case STOPPING:
       next_state = IDLE;
-
       digitalWrite(BLUE_LED_PIN, LOW);
       digitalWrite(RED_LED_PIN, HIGH);
 
-      reset_motors(0);
-      
+      move_to_pos(0, true);
+
       digitalWrite(RED_LED_PIN, LOW);
       break;
   }
