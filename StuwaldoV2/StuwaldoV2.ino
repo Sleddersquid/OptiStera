@@ -36,12 +36,12 @@ enum platform_state {
 };
 
 // When the program starts, the actuators reset and go to IDLE
-volatile platform_state current_state = STOPPING;
-platform_state next_state = IDLE; 
+volatile platform_state current_state = STOPPING; // Will be populated at iteration of loop
+platform_state next_state = STOPPING; 
 
 // The period sets the speed for the actuators
-uint8_t period = MODERATE;
-uint8_t next_period = period;
+uint16_t period = MODERATE;
+uint16_t next_period = period;
 
 uint32_t time_read, last_time;
 uint32_t time_set[NUM_MOTORS];
@@ -70,7 +70,7 @@ void change_state() {
   unsigned long interrupt_time = millis();
   // If interrupts comes faster than debounce_interval, assume it's a bounce and ignore
   if (interrupt_time - last_interrupt_time > debounce_interval) {
-    SerialUSB.println("BUTTON WAS PRESSED FOR FUCKS SACKE");
+    // SerialUSB.println("BUTTON WAS PRESSED FOR FUCKS SACKE");
     // Don't need to jump to RUNNING and IDLE, Because
     // SET_TIME -> RUNNING (stay until interrupt) and STOPPING -> IDLE (stay until interrupt)
     if (current_state == IDLE) next_state = SET_TIME;
@@ -79,7 +79,8 @@ void change_state() {
   }
 }
 
-float positionFunction(int t, float bias) { // l_k(t) with k = 1,2,3 and t (ms)
+// l_k(t) with k = 1, 2, 3 and t (ms)
+float positionFunction(int t, float bias) { 
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
@@ -103,7 +104,7 @@ void calibrate(bool run_calibration) {
 
     // Check if the kth_motors are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_motor] - END_POS[kth_motor]) < OFF_THRESHOLD);
-    // if (!calibration_valid) { break; }
+    if (!calibration_valid) { break; }
   }
   // Retract all actuators
   for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
@@ -119,7 +120,7 @@ void calibrate(bool run_calibration) {
 
     // Check if the motors are powered (reading is valid)
     calibration_valid = (abs(zero_readings[kth_motor] - ZERO_POS[kth_motor]) < OFF_THRESHOLD);
-    // if (!calibration_valid) { break; }
+    if (!calibration_valid) { break; }
   }
 
   // IF CALIBRATION IS TO BE DONE MANUALY, uncomment this
@@ -177,10 +178,10 @@ void move_to_pos(uint32_t set_time) {
   // move the motors, with speed (pwm) and direction
   for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
     if (abs(pos_diff[kth_motor]) >= POS_THRESHOLD) {
-      pwm_value[kth_motor] = constrain(abs(pos_diff[kth_motor]) * PWM_GAIN, MIN_PWM, MAX_PWM);
+      // pwm_value[kth_motor] = pos_diff[kth_motor]);
 
       digitalWrite(MOTOR_DIR_PINS[kth_motor], direction[kth_motor]);
-      analogWrite(MOTOR_PWM_PINS[kth_motor], pwm_value[kth_motor]);
+      analogWrite(MOTOR_PWM_PINS[kth_motor], constrain(abs(pos_diff[kth_motor]* PWM_GAIN), MIN_PWM, MAX_PWM));
     } else {
       analogWrite(MOTOR_PWM_PINS[kth_motor], 0);
     }
@@ -197,11 +198,9 @@ void reset_motors(uint16_t point_to_reset_to) {
     analogWrite(MOTOR_PWM_PINS[kth_motor], MAX_PWM / 2);  // Running at half speed
   }
 
-
   // While not all motors are fully reset, read each motor individually and
   while (motor_count_reset != NUM_MOTORS) {
     motor_count_reset = 0;
-    // SerialUSB.println("adad");
     for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
       current_pos[kth_motor] = map(read_analogue_avg(MOTOR_POT_PINS[kth_motor]), ZERO_POS[kth_motor], END_POS[kth_motor], MIN_POS, MAX_POS);
 
@@ -213,6 +212,11 @@ void reset_motors(uint16_t point_to_reset_to) {
 }
 
 void setup() {
+  // For SerialUSB communication
+  SerialUSB.begin(BAUD_RATE);
+  // analogReadResolution(10); // 10 bit is default
+
+  // ----- BUTTON AND SWITCH ----- //
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
   pinMode(BLUE_LED_PIN, OUTPUT);
@@ -223,9 +227,6 @@ void setup() {
 
   pinMode(MODE_BUTTON, INPUT);
   attachInterrupt(digitalPinToInterrupt(MODE_BUTTON), change_state, RISING);
-
-  SerialUSB.begin(BAUD_RATE);
-  // analogReadResolution(10); // 10 bit is default
 
   // -------- MOTOR SETUP -------- //
   pinMode(MOTOR_POT_PIN_1, INPUT);
@@ -246,6 +247,8 @@ void setup() {
 
   // If no claibration is done, we assume that calibration is already done previously
   calibrate(CALIBRATE);
+
+  delay(2000);
 }
 
 int read_analogue_avg(int pin) {
@@ -278,8 +281,12 @@ void loop() {
     period = next_period;
     if (current_state == RUNNING) current_state = RESET;
   }
+  
+  // String current_pos_str = "Current: ";
+  // String desired_pos_str = "Desired: ";
 
   time_read = millis();
+
   switch (current_state) {
     case IDLE:
       digitalWrite(GREEN_LED_PIN, HIGH);
@@ -295,24 +302,36 @@ void loop() {
       break;
 
     case RUNNING:
-      move_to_pos(time_read - last_time);
-
       current_time = time_read - last_time;
 
-      if (current_time - previousMillis >= blink_interval) {
-        previousMillis = current_time;
+      // SerialUSB.print("Time: ");
+      // SerialUSB.println(current_time);
 
-        ledState = !ledState;
+      move_to_pos(current_time);
 
-        digitalWrite(BLUE_LED_PIN, ledState);
-      }
+
+      // if (current_time - previousMillis >= blink_interval) {
+      //   previousMillis = current_time;
+
+      //   ledState = !ledState;
+
+      //   digitalWrite(BLUE_LED_PIN, ledState);
+      // }
+
+      // for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
+      //   current_pos_str += String(current_pos[kth_motor]) + ", ";
+      //   desired_pos_str += String(desired_pos[kth_motor]) + ", ";
+      // }
+
+      // SerialUSB.println(current_pos_str);
+      // SerialUSB.println(desired_pos_str);
 
       break;
 
     case RESET:
       next_state = SET_TIME;
-      digitalWrite(BLUE_LED_PIN, LOW);
-      digitalWrite(RED_LED_PIN, HIGH);
+      digitalWrite(BLUE_LED_PIN, HIGH);
+      digitalWrite(RED_LED_PIN, LOW);
       reset_motors(VERTICAL_SHIFT - AMPLUTIDE);
       break;
 
