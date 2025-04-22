@@ -9,6 +9,8 @@
 #define AMPLUTIDE 400 // pot values
 #define VERTICAL_SHIFT 511.5 // pot values
 
+#define GRADTIENT 0.25
+
 #define ACTUATOR_MEASUREMENTS 255 // measurements to take
 #define BUTTON_MEASUREMENTS 10 // measurements to take
 
