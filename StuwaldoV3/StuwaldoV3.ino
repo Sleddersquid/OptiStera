@@ -17,15 +17,15 @@ uint32_t blink_interval = 1000, previousMillis, current_time;  // in ms
 bool ledState = 0;
 
 // Enum for different speeds for the actuator
-enum ActuatorSpeed {
-  SLOW = 11000,     // in ms
-  MODERATE = 8000,  // in ms
-  FAST = 5000       // in ms
+enum ActuatorSpeed { // in ms
+  SLOW = 11000,   
+  MODERATE = 8000,
+  FAST = 5000     
 };
 
 // Enum for modes
 enum PlatformState {
-  IDLE,     // The platform goes nothing
+  IDLE,     // The platform is waiting for a signal to start
   SET_TIME, // Stamp the time read, so that l_k(t) start at 0 every change between IDLE -> RUNNING
   RUNNING,  // The platform is moving and has heave motion
   RESET,    // For when the platform changes speeds (change in P in l_k(t)), reset to A - C and start again with current speed  
@@ -42,7 +42,6 @@ uint16_t period = MODERATE;
 uint16_t next_period = period;
 
 uint32_t time_read, last_time; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
-uint32_t time_set[NUM_ACTUATORS];
 
 uint16_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
 uint16_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
@@ -54,16 +53,14 @@ bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
 int16_t end_readings[NUM_ACTUATORS];   // Readings from fully extended position
 int16_t zero_readings[NUM_ACTUATORS];  // Readings from fully retracted position
 // If no calibration is done, assume it has been done previously. IMPORTANT
-bool calibration_valid = true;  // Will be set to false if calibration waas not done correctly
+bool calibration_valid = true;  // Will be set to false if calibration was not done correctly
 
-const uint8_t debounce_interval = 200;
-volatile uint32_t last_interrupt_time = 0;
 uint32_t interrupt_time = 0;
+volatile uint32_t last_interrupt_time = 0;
+const uint8_t debounce_interval = 200;
 
 void calibrate(bool run_calibration) {
-  if (!run_calibration) {
-    return;
-  }
+  if (!run_calibration) return;
 
   // Extend all actuators
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
@@ -292,8 +289,7 @@ void loop() {
       current_time = time_read - last_time;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        time_set[kth_actuator] = current_time % period;
-        desired_pos[kth_actuator] = positionFunction(time_set[kth_actuator], ACTUATOR_BIAS[kth_actuator]);
+        desired_pos[kth_actuator] = positionFunction((current_time % period), ACTUATOR_BIAS[kth_actuator]);
       }
     
       // Moves actuators to desired position, calculating direction and speed for actuators
