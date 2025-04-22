@@ -5,7 +5,6 @@
 // https://github.com/progressiveautomations/Stewart-Platform/blob/master/arduino/platform/platform.ino
 
 // To do list
-// 1. Add ENABLE PRINT macro for SerialUSB.print()?
 // 2. Shorten the list of global variables, which is all for now.
 // 3. Add enable and diabling of H-bridge
 // 4. Is it a concern that the lights light up when reset is done?
@@ -28,12 +27,13 @@ enum platform_state {
   SET_TIME,
   RUNNING,
   RESET,
-  STOPPING
+  STOPPING,
+  EMERGENCY
 };
 
 // When the program starts, the actuators reset and go to IDLE
-volatile platform_state current_state = STOPPING; // Will be populated at iteration of loop
-platform_state next_state = STOPPING; 
+volatile platform_state current_state = EMERGENCY; // Will be populated at iteration of loop
+platform_state next_state = EMERGENCY;
 
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
@@ -58,9 +58,8 @@ const uint8_t debounce_interval = 200;
 volatile unsigned long last_interrupt = 0;
 
 void change_state() {
-  bool button_reading = read_digital_avg(MODE_BUTTON);
-
-  if (button_reading == 0) return;
+  // If button is HIGH over n measurements, then proceed
+  if (!(many_read_digital(MODE_BUTTON_PIN) == BUTTON_MEASUREMENTS)) return;
 
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
@@ -188,16 +187,16 @@ void setup() {
   SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
   
-  pinMode(BUTTON_LED, OUTPUT);
+  pinMode(BUTTON_LED_PIN, OUTPUT);
 
   // For the three position switch
   pinMode(LEFT_SWITCH_PIN, INPUT);
   pinMode(RIGTH_SWITCH_PIN, INPUT);
 
-  pinMode(MODE_BUTTON, INPUT);
-  attachInterrupt(digitalPinToInterrupt(MODE_BUTTON), change_state, RISING);
+  pinMode(MODE_BUTTON_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(MODE_BUTTON_PIN), change_state, RISING);
 
-
+  pinMode(EMERGENCY_STOP_PIN, INPUT);
 
   // -------- ACTUATOR SETUP -------- //
   pinMode(ACTUATOR_POT_PIN_1, INPUT);
@@ -219,7 +218,7 @@ void setup() {
   // If no claibration is done, we assume that calibration is already done previously
   calibrate(CALIBRATE);
 
-  delay(2000);
+  delay(1000);
 }
 
 void on_off_lights(platform_state state, uint32_t time) {
@@ -230,54 +229,65 @@ void on_off_lights(platform_state state, uint32_t time) {
 
         ledState = !ledState;
 
-        digitalWrite(BUTTON_LED, ledState);
+        digitalWrite(BUTTON_LED_PIN, ledState);
       }
       break;
 
     case RUNNING:
-      digitalWrite(BUTTON_LED, HIGH);
+      digitalWrite(BUTTON_LED_PIN, HIGH);
       break;
 
     case STOPPING:
-      digitalWrite(BUTTON_LED, LOW);
+      digitalWrite(BUTTON_LED_PIN, LOW);
+      break;
+
+    case EMERGENCY:
+      digitalWrite(BUTTON_LED_PIN, LOW);
       break;
   }
 }
 
 int read_analogue_avg(int pin) {
-  uint32_t reads = 0;
+  // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
+  // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
+  uint32_t reads = 0; 
   for (int i = 0; i < ACTUATOR_MEASUREMENTS; i++) {
     reads += analogRead(pin);
   }
-  return (int)(reads / ACTUATOR_MEASUREMENTS);
+  return (reads / ACTUATOR_MEASUREMENTS);
 }
 
-bool read_digital_avg(int pin) {
+int many_read_digital(int pin) {
   int reads = 0;
   for (int i = 0; i < BUTTON_MEASUREMENTS; i++) {
     reads += digitalRead(pin);
   }
-  return (bool)(reads / BUTTON_MEASUREMENTS);
+  return reads;
 }
 
 void loop() {
   int motor_count_reset = 0;
 
-  current_state = next_state; 
-
   // 10 - SLOW mode      - Switch is at the left most position
   // 01 - FAST mode      - Switch is at the right most position
   // 00 - Moderate mode  - Switch is at the middle position
-  if (read_digital_avg(LEFT_SWITCH_PIN) == 1) next_period = SLOW;
-  else if (read_digital_avg(RIGTH_SWITCH_PIN) == 1) next_period = FAST;
+  if (many_read_digital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
+  else if (many_read_digital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
   else next_period = MODERATE;
 
   if (next_period != period) {
     period = next_period;
-    if (current_state == RUNNING) current_state = RESET;
+    if (current_state == RUNNING) next_state = RESET;
   }
+
+  if(many_read_digital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
+    next_state = EMERGENCY;
+  }
+
+  current_state = next_state; 
   
   time_read = millis();
+  current_time = time_read - last_time;
   on_off_lights(current_state, time_read);
 
   switch (current_state) {
@@ -290,15 +300,12 @@ void loop() {
       break;
 
     case RUNNING:
-      current_time = time_read - last_time;
-
+      
       move_to_pos(current_time);
 
       break;
 
     case RESET:
-      next_state = RESET;
-
       move_to_pos(current_time, true);
 
       for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
@@ -317,7 +324,7 @@ void loop() {
       move_to_pos(current_time, true);
 
       for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
-        if (current_pos[kth_motor] < POS_THRESHOLD) {
+        if (current_pos[kth_motor] <= POS_THRESHOLD) {
           motor_count_reset++;
         }
       }
@@ -327,5 +334,25 @@ void loop() {
       }
 
       break;
+
+    case EMERGENCY:
+      for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
+        current_pos[kth_motor] = map(read_analogue_avg(ACTUATOR_POT_PINS[kth_motor]), ZERO_POS[kth_motor], END_POS[kth_motor], MIN_POS, MAX_POS);
+
+        desired_pos[kth_motor] = current_pos[kth_motor];
+      }
+
+      if (many_read_digital(EMERGENCY_STOP_PIN) == 0) {
+        next_state = STOPPING;
+      }
+
+      break;
+
+    default:
+      // Do nothing.
+      break;
   }
+
+  String csv_format = String(current_time) + ";" + String(current_pos[0]) + ";" + String(current_pos[1]) + ";" + String(current_pos[2]) + ";" + String(desired_pos[0]) + ";" + String(desired_pos[1]) + ";" + String(desired_pos[2]);
+  SerialUSB.println(csv_format);
 }

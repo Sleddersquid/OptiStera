@@ -1,10 +1,13 @@
 #pragma once
 
-// The LED on the button
-#define BUTTON_LED 47
+// Pulldown
+#define EMERGENCY_STOP_PIN 22
 
 // For the button that changes which modes for the platform
-#define MODE_BUTTON 44
+#define MODE_BUTTON_PIN 44
+
+// The LED on the button
+#define BUTTON_LED_PIN 47
 
 // Switch that changes the speed for the actuators (period)
 #define LEFT_SWITCH_PIN 40
