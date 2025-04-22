@@ -11,21 +11,18 @@
 // 4. Is it a concern that the lights light up when reset is done?
 // 5. IMPORTANT: Add led/light on the button
 
-// #include <LiquidCrystal_I2C.h>
+uint32_t blink_interval = 1000, previousMillis, current_time;  // in ms
 
-// LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
+bool ledState = 0;
 
 // Enum for different speeds for the actuator
-uint32_t blink_interval = 700, previousMillis, current_time;  // in ms
-bool ledState = 1;
-
-enum MotorSpeed {
+enum ActuatorSpeed {
   SLOW = 11000,     // in ms
   MODERATE = 8000,  // in ms
   FAST = 5000       // in ms
 };
 
-// ENUM for modes
+// Enum for modes
 enum platform_state {
   IDLE,
   SET_TIME,
@@ -36,25 +33,24 @@ enum platform_state {
 
 // When the program starts, the actuators reset and go to IDLE
 volatile platform_state current_state = STOPPING; // Will be populated at iteration of loop
-platform_state next_state = STOPPING;
+platform_state next_state = STOPPING; 
 
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
 uint16_t next_period = period;
 
 uint32_t time_read, last_time;
-uint32_t time_set[NUM_MOTORS];
+uint32_t time_set[NUM_ACTUATORS];
 
-uint16_t desired_pos[NUM_MOTORS];  // Ranges from 0..1023
-uint16_t current_pos[NUM_MOTORS];  // Ranges from 0..1023
-int16_t pos_diff[NUM_MOTORS];      // Ranges from -1023..1023
-uint8_t pwm_value[NUM_MOTORS];     // Ranges from 0..255
-bool direction[NUM_MOTORS];        // 0 = RETRACT, 1 = EXTEND
-int16_t reset_speed[NUM_MOTORS];   // Speed of the motors when resetting
+uint16_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+uint16_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+int16_t pos_diff[NUM_ACTUATORS];      // Ranges from -1023..1023
+uint8_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
+bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
 
 // Only used for calibration
-int16_t end_readings[NUM_MOTORS];   // Readings from fully extended position
-int16_t zero_readings[NUM_MOTORS];  // Readings from fully retracted position
+int16_t end_readings[NUM_ACTUATORS];   // Readings from fully extended position
+int16_t zero_readings[NUM_ACTUATORS];  // Readings from fully retracted position
 // If no calibration is done, assume it has been done previously
 bool calibration_valid = true;  // Set to false if calibration is not valid
 
@@ -90,33 +86,33 @@ void calibrate(bool run_calibration) {
   }
 
   // Extend all actuators
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
     // Start with extension
-    digitalWrite(MOTOR_DIR_PINS[kth_motor], EXTEND);
-    analogWrite(MOTOR_PWM_PINS[kth_motor], MAX_PWM);
+    digitalWrite(ACTUATOR_DIR_PINS[kth_motor], EXTEND);
+    analogWrite(ACTUATOR_PWM_PINS[kth_motor], MAX_PWM);
   }
   delay(RESET_DELAY);
 
   // Stop the extension, get avrage anlogue readings
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
-    analogWrite(MOTOR_PWM_PINS[kth_motor], 0);
-    end_readings[kth_motor] = read_analogue_avg(MOTOR_POT_PINS[kth_motor]);
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
+    analogWrite(ACTUATOR_PWM_PINS[kth_motor], 0);
+    end_readings[kth_motor] = read_analogue_avg(ACTUATOR_POT_PINS[kth_motor]);
 
     // Check if the kth_motors are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_motor] - END_POS[kth_motor]) < OFF_THRESHOLD);
     if (!calibration_valid) { break; }
   }
   // Retract all actuators
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
-    digitalWrite(MOTOR_DIR_PINS[kth_motor], RETRACT);
-    analogWrite(MOTOR_PWM_PINS[kth_motor], MAX_PWM);
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
+    digitalWrite(ACTUATOR_DIR_PINS[kth_motor], RETRACT);
+    analogWrite(ACTUATOR_PWM_PINS[kth_motor], MAX_PWM);
   }
   delay(RESET_DELAY);
 
   // Stop the retraction, get averaged analog readings
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
-    analogWrite(MOTOR_PWM_PINS[kth_motor], 0);
-    zero_readings[kth_motor] = read_analogue_avg(MOTOR_POT_PINS[kth_motor]);
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
+    analogWrite(ACTUATOR_PWM_PINS[kth_motor], 0);
+    zero_readings[kth_motor] = read_analogue_avg(ACTUATOR_POT_PINS[kth_motor]);
 
     // Check if the motors are powered (reading is valid)
     calibration_valid = (abs(zero_readings[kth_motor] - ZERO_POS[kth_motor]) < OFF_THRESHOLD);
@@ -127,7 +123,7 @@ void calibrate(bool run_calibration) {
   SerialUSB.print("calibration_valid: ");
   SerialUSB.println(calibration_valid);
 
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
     SerialUSB.print(" Motor ");
     SerialUSB.print(kth_motor);
     SerialUSB.print(": ");
@@ -140,62 +136,49 @@ void calibrate(bool run_calibration) {
 
   // Set the new calibration values if found to be valid
   if (calibration_valid) {
-    for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor) {
+    for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; ++kth_motor) {
       END_POS[kth_motor] = end_readings[kth_motor];
       ZERO_POS[kth_motor] = zero_readings[kth_motor];
     }
   }
 }
 
-void move_to_pos(uint32_t set_time, bool reset) {
-  // String to_lcd_display = "";
-
-  if (reset) {
-    for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-      if (pos_diff[kth_motor] > 0) {
-        time_set[kth_motor] = (SLOW/2 + set_time) % period;
-        SerialUSB.println("FUCKKKK");
-      } else {}
-      desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
+void move_to_pos(uint32_t set_time, bool reset=false) {
+  // If not reset set desired length with l_k(t), else lower actuators to desired pos
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
+    if (!reset) {
+      // Determine the position for each actuator
+        time_set[kth_motor] = set_time % period;
+        desired_pos[kth_motor] = positionFunction(time_set[kth_motor], ACTUATOR_BIAS[kth_motor]);
+      }
+    else {
+      desired_pos[kth_motor] = desired_pos[kth_motor] - 0.25; // 0.01 // In binary, float point arithmatic
     }
   }
-  else {
-    for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-      time_set[kth_motor] = set_time % period;
-      desired_pos[kth_motor] = positionFunction(time_set[kth_motor], MOTOR_BIAS[kth_motor]);
-    }
-  }
-
-  // Determine the position for each actuator
 
   // Get the current positon of all actuators and set dirrection based of the
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-    current_pos[kth_motor] = map(read_analogue_avg(MOTOR_POT_PINS[kth_motor]), ZERO_POS[kth_motor], END_POS[kth_motor], MIN_POS, MAX_POS);
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
+    current_pos[kth_motor] = map(read_analogue_avg(ACTUATOR_POT_PINS[kth_motor]), ZERO_POS[kth_motor], END_POS[kth_motor], MIN_POS, MAX_POS);
 
     pos_diff[kth_motor] = desired_pos[kth_motor] - current_pos[kth_motor];
 
-    // to_lcd_display += String(kth_motor) + ":" + String(pos_diff[kth_motor] * PWM_GAIN) + " ";
-
-    // SerialUSB.println(to_lcd_display.length());
-
     // Se nærmere på
-    if (pos_diff[kth_motor] > 0) {
+    if (current_pos[kth_motor] < desired_pos[kth_motor]) {
       direction[kth_motor] = EXTEND;
     } else {
       direction[kth_motor] = RETRACT;
     }
   }
-  // SerialUSB.println(to_lcd_display);
 
   // move the motors, with speed (pwm) and direction
-  for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
+  for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
     if (abs(pos_diff[kth_motor]) >= POS_THRESHOLD) {
       // pwm_value[kth_motor] = pos_diff[kth_motor]);
 
-      digitalWrite(MOTOR_DIR_PINS[kth_motor], direction[kth_motor]);
-      analogWrite(MOTOR_PWM_PINS[kth_motor], constrain(abs(pos_diff[kth_motor]* PWM_GAIN), MIN_PWM, MAX_PWM));
+      digitalWrite(ACTUATOR_DIR_PINS[kth_motor], direction[kth_motor]);
+      analogWrite(ACTUATOR_PWM_PINS[kth_motor], constrain(abs(pos_diff[kth_motor]* PWM_GAIN), MIN_PWM, MAX_PWM));
     } else {
-      analogWrite(MOTOR_PWM_PINS[kth_motor], 0);
+      analogWrite(ACTUATOR_PWM_PINS[kth_motor], 0);
     }
   }
 }
@@ -204,11 +187,8 @@ void setup() {
   // For SerialUSB communication
   SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
-
-  // ----- BUTTON AND SWITCH ----- //
-  pinMode(RED_LED_PIN, OUTPUT);
-  pinMode(GREEN_LED_PIN, OUTPUT);
-  pinMode(BLUE_LED_PIN, OUTPUT);
+  
+  pinMode(BUTTON_LED, OUTPUT);
 
   // For the three position switch
   pinMode(LEFT_SWITCH_PIN, INPUT);
@@ -217,27 +197,51 @@ void setup() {
   pinMode(MODE_BUTTON, INPUT);
   attachInterrupt(digitalPinToInterrupt(MODE_BUTTON), change_state, RISING);
 
-  // -------- MOTOR SETUP -------- //
-  pinMode(MOTOR_POT_PIN_1, INPUT);
-  pinMode(MOTOR_POT_PIN_2, INPUT);
-  pinMode(MOTOR_POT_PIN_3, INPUT);
 
-  pinMode(MOTOR_DIR_PIN_1, OUTPUT);
-  pinMode(MOTOR_DIR_PIN_2, OUTPUT);
-  pinMode(MOTOR_DIR_PIN_3, OUTPUT);
 
-  pinMode(MOTOR_PWM_PIN_1, OUTPUT);
-  pinMode(MOTOR_PWM_PIN_2, OUTPUT);
-  pinMode(MOTOR_PWM_PIN_3, OUTPUT);
+  // -------- ACTUATOR SETUP -------- //
+  pinMode(ACTUATOR_POT_PIN_1, INPUT);
+  pinMode(ACTUATOR_POT_PIN_2, INPUT);
+  pinMode(ACTUATOR_POT_PIN_3, INPUT);
 
-  pinMode(ENABLE_MOTORS, OUTPUT);
+  pinMode(ACTUATOR_DIR_PIN_1, OUTPUT);
+  pinMode(ACTUATOR_DIR_PIN_2, OUTPUT);
+  pinMode(ACTUATOR_DIR_PIN_3, OUTPUT);
+
+  pinMode(ACTUATOR_PWM_PIN_1, OUTPUT);
+  pinMode(ACTUATOR_PWM_PIN_2, OUTPUT);
+  pinMode(ACTUATOR_PWM_PIN_3, OUTPUT);
+
+  pinMode(ENABLE_ACTUATORS, OUTPUT);
   // Is inverted, so /Enable
-  digitalWrite(ENABLE_MOTORS, LOW);
+  digitalWrite(ENABLE_ACTUATORS, LOW);
 
   // If no claibration is done, we assume that calibration is already done previously
   calibrate(CALIBRATE);
 
   delay(2000);
+}
+
+void on_off_lights(platform_state state, uint32_t time) {
+  switch (current_state) {
+    case IDLE:
+      if (time - previousMillis >= blink_interval) {
+        previousMillis = time;
+
+        ledState = !ledState;
+
+        digitalWrite(BUTTON_LED, ledState);
+      }
+      break;
+
+    case RUNNING:
+      digitalWrite(BUTTON_LED, HIGH);
+      break;
+
+    case STOPPING:
+      digitalWrite(BUTTON_LED, LOW);
+      break;
+  }
 }
 
 int read_analogue_avg(int pin) {
@@ -257,6 +261,8 @@ bool read_digital_avg(int pin) {
 }
 
 void loop() {
+  int motor_count_reset = 0;
+
   current_state = next_state; 
 
   // 10 - SLOW mode      - Switch is at the left most position
@@ -271,71 +277,55 @@ void loop() {
     if (current_state == RUNNING) current_state = RESET;
   }
   
-  // String current_pos_str = "Current: ";
-  // String desired_pos_str = "Desired: ";
-
   time_read = millis();
+  on_off_lights(current_state, time_read);
 
   switch (current_state) {
     case IDLE:
-      digitalWrite(GREEN_LED_PIN, HIGH);
-      // digitalWrite(ENABLE_MOTORS, HIGH); // Diables the H-bridge
       break;
 
     case SET_TIME:
       next_state = RUNNING;
-      digitalWrite(GREEN_LED_PIN, LOW);
-      // digitalWrite(ENABLE_MOTORS, LOW); // Enables the H-bridge
       last_time = time_read;
-      digitalWrite(RED_LED_PIN, LOW);
       break;
 
     case RUNNING:
       current_time = time_read - last_time;
 
-      // SerialUSB.print("Time: ");
-      // SerialUSB.println(current_time);
-
-      move_to_pos(current_time, false);
-
-
-      // if (current_time - previousMillis >= blink_interval) {
-      //   previousMillis = current_time;
-
-      //   ledState = !ledState;
-
-      //   digitalWrite(BLUE_LED_PIN, ledState);
-      // }
-
-      // for (int kth_motor = 0; kth_motor < NUM_MOTORS; kth_motor++) {
-      //   current_pos_str += String(current_pos[kth_motor]) + ", ";
-      //   desired_pos_str += String(desired_pos[kth_motor]) + ", ";
-      // }
-
-      // SerialUSB.println(current_pos_str);
-      // SerialUSB.println(desired_pos_str);
+      move_to_pos(current_time);
 
       break;
 
     case RESET:
-      next_state = SET_TIME;
-      digitalWrite(BLUE_LED_PIN, HIGH);
-      digitalWrite(RED_LED_PIN, LOW);
-
-      current_time = time_read - last_time;
+      next_state = RESET;
 
       move_to_pos(current_time, true);
+
+      for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
+        if (current_pos[kth_motor] - (VERTICAL_SHIFT - AMPLUTIDE) < POS_THRESHOLD) {
+          motor_count_reset++;
+        }
+      }
+
+      if (motor_count_reset == NUM_ACTUATORS) {
+        next_state = SET_TIME;
+      }
 
       break;
 
     case STOPPING:
-      next_state = IDLE;
-      digitalWrite(BLUE_LED_PIN, LOW);
-      digitalWrite(RED_LED_PIN, HIGH);
+      move_to_pos(current_time, true);
 
-      move_to_pos(0, true);
+      for (int kth_motor = 0; kth_motor < NUM_ACTUATORS; kth_motor++) {
+        if (current_pos[kth_motor] < POS_THRESHOLD) {
+          motor_count_reset++;
+        }
+      }
 
-      digitalWrite(RED_LED_PIN, LOW);
+      if (motor_count_reset == NUM_ACTUATORS) {
+        next_state = IDLE;
+      }
+
       break;
   }
 }
