@@ -173,9 +173,9 @@ void on_off_lights(PlatformState state, uint32_t time) {
       if (time - previousMillis >= blink_interval) {
         previousMillis = time;
 
-        ledState = !ledState;
-
         digitalWrite(BUTTON_LED_PIN, ledState);
+
+        ledState = !ledState;
       }
       break;
 
@@ -185,6 +185,7 @@ void on_off_lights(PlatformState state, uint32_t time) {
 
     case STOPPING:
       digitalWrite(BUTTON_LED_PIN, LOW);
+      ledState = HIGH;
       break;
 
     case EMERGENCY:
@@ -307,7 +308,7 @@ void loop() {
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         // Check if the desired position has been reached
-        if (current_pos[kth_actuator] - (VERTICAL_SHIFT - AMPLUTIDE) < POS_THRESHOLD) {
+        if (current_pos[kth_actuator] - positionFunction(0, ACTUATOR_BIAS[kth_actuator]) < POS_THRESHOLD) {
           actuator_count_reset++;
         }
       }
