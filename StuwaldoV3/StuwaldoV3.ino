@@ -167,7 +167,8 @@ void move_to_pos() {
   }
 }
 
-void on_off_lights(PlatformState state, uint32_t time) {
+void button_light(PlatformState state, uint32_t time, bool enable) {
+  if (!enable) return;
   switch (current_state) {
     case IDLE:
       if (time - previousMillis >= blink_interval) {
@@ -275,7 +276,8 @@ void loop() {
   current_state = next_state;
   
   time_read = millis();
-  on_off_lights(current_state, time_read);
+
+  button_light(current_state, time_read, ENABLE_BUTTON_LED);
 
   switch (current_state) {
     case IDLE:

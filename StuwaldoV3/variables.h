@@ -16,6 +16,8 @@
 
 #define BAUD_RATE 115200
 
+#define ENABLE_BUTTON_LED 1
+
 // ----------- LCD DISPLAY ------------ //
 #define LCD_ADDRESS 0x27
 
