@@ -28,8 +28,8 @@ enum PlatformState {
   IDLE,     // The platform is waiting for a signal to start
   SET_TIME, // Stamp the time read, so that l_k(t) start at 0 every change between IDLE -> RUNNING
   RUNNING,  // The platform is moving and has heave motion
-  RESET,    // For when the platform changes speeds (change in P in l_k(t)), reset to A - C and start again with current speed  
-  STOPPING, // For stopping the platform completely, and goes back to IDLE state
+  REPOSITION,    // For when the platform changes speeds (change in P in l_k(t)), reset to l_k(t) and start again with current speed  
+  RETURN_HOME, // For stopping the platform completely, and goes back to IDLE state 
   EMERGENCY // For when the emergency button has been pressed, and the H-bridge loses power. 
 };
 
@@ -127,9 +127,9 @@ void change_state() {
   // If interrupts comes faster than debounce_interval, assume it's a bounce and ignore
   if (interrupt_time - last_interrupt_time > debounce_interval) {
     // Don't need to jump to RUNNING and IDLE, because
-    // SET_TIME -> RUNNING (stay until interrupt) and STOPPING -> IDLE (stay until interrupt)
+    // SET_TIME -> RUNNING (stay until interrupt) and RETURN_HOME -> IDLE (stay until interrupt)
     if (current_state == IDLE) next_state = SET_TIME;
-    else if (current_state == RUNNING || current_state == RESET) next_state = STOPPING;
+    else if (current_state == RUNNING || current_state == REPOSITION) next_state = RETURN_HOME;
     last_interrupt_time = interrupt_time;
   }
 }
@@ -183,7 +183,7 @@ void on_off_lights(PlatformState state, uint32_t time) {
       digitalWrite(BUTTON_LED_PIN, HIGH);
       break;
 
-    case STOPPING:
+    case RETURN_HOME:
       digitalWrite(BUTTON_LED_PIN, LOW);
       ledState = HIGH;
       break;
@@ -264,7 +264,7 @@ void loop() {
 
   if (next_period != period) {
     period = next_period;
-    if (current_state == RUNNING) next_state = RESET;
+    if (current_state == RUNNING) next_state = REPOSITION;
   }
 
   if(many_read_digital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
@@ -298,7 +298,7 @@ void loop() {
 
       break;
 
-    case RESET:
+    case REPOSITION:
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT; // 0.01 // In binary, float point arithmatic
       }
@@ -320,7 +320,7 @@ void loop() {
 
       break;
 
-    case STOPPING:
+    case RETURN_HOME:
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT; // 0.01 // In binary, float point arithmatic
       }
@@ -352,7 +352,7 @@ void loop() {
 
       // If emergency is LOW, then emergency has been realeased and move to stopping state
       if (many_read_digital(EMERGENCY_STOP_PIN) == 0) {
-        next_state = STOPPING;
+        next_state = RETURN_HOME;
       }
 
       break;
