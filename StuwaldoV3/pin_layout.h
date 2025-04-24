@@ -3,8 +3,8 @@
 // Pulldown
 #define EMERGENCY_STOP_PIN 22
 
-// For the button that changes which modes for the platform
-#define MODE_BUTTON_PIN 44
+// For the button that changes which states for the platform
+#define STATE_BUTTON_PIN 44
 
 // The LED on the button
 #define BUTTON_LED_PIN 47

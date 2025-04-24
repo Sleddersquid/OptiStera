@@ -37,11 +37,13 @@ enum PlatformState {
 volatile PlatformState current_state = EMERGENCY; // Will be populated at iteration of loop
 PlatformState next_state = EMERGENCY;
 
+int actuator_count_reset = 0;
+
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
 uint16_t next_period = period;
 
-uint32_t time_read, last_time; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
+uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
 uint16_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
 uint16_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
@@ -52,16 +54,13 @@ bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
 // Variables used only for calibration
 int16_t end_readings[NUM_ACTUATORS];   // Readings from fully extended position
 int16_t zero_readings[NUM_ACTUATORS];  // Readings from fully retracted position
-// If no calibration is done, assume it has been done previously. IMPORTANT
-bool calibration_valid = true;  // Will be set to false if calibration was not done correctly
+bool calibration_valid = true;  // Will be set to false if calibration was not done correctly, and program stops
 
 uint32_t interrupt_time = 0;
 volatile uint32_t last_interrupt_time = 0;
 const uint8_t debounce_interval = 200;
 
-void calibrate(bool run_calibration) {
-  if (!run_calibration) return;
-
+void calibrate() {
   // Extend all actuators
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
     digitalWrite(ACTUATOR_DIR_PINS[kth_actuator], EXTEND);
@@ -120,8 +119,8 @@ void calibrate(bool run_calibration) {
 }
 
 void change_state() {
-  // If button is not HIGH in all measurements assume noise and don't trigger state change, else proceed
-  if (many_read_digital(MODE_BUTTON_PIN) != BUTTON_MEASUREMENTS) return;
+  // If button is not HIGH in all measurements assume noise and don't trigger state change
+  if (many_read_digital(STATE_BUTTON_PIN) != BUTTON_MEASUREMENTS) return;
 
   interrupt_time = millis();
   // If interrupts comes faster than debounce_interval, assume it's a bounce and ignore
@@ -167,8 +166,7 @@ void move_to_pos() {
   }
 }
 
-void button_light(PlatformState state, uint32_t time, bool enable) {
-  if (!enable) return;
+void state_button_light(PlatformState state, uint32_t time) {
   switch (current_state) {
     case IDLE:
       if (time - previousMillis >= blink_interval) {
@@ -215,7 +213,7 @@ int many_read_digital(int pin) {
 
 void setup() {
   // For SerialUSB communication
-  SerialUSB.begin(BAUD_RATE);
+  // SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
   
   pinMode(BUTTON_LED_PIN, OUTPUT);
@@ -224,8 +222,8 @@ void setup() {
   pinMode(LEFT_SWITCH_PIN, INPUT);
   pinMode(RIGTH_SWITCH_PIN, INPUT);
 
-  pinMode(MODE_BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(MODE_BUTTON_PIN), change_state, RISING);
+  pinMode(STATE_BUTTON_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(STATE_BUTTON_PIN), change_state, RISING);
 
   pinMode(EMERGENCY_STOP_PIN, INPUT);
 
@@ -247,14 +245,17 @@ void setup() {
   digitalWrite(ENABLE_ACTUATORS, LOW);
 
   // If no claibration is done, we assume that calibration is already done previously
-  calibrate(CALIBRATE);
+  if(CALIBRATE) {
+    calibrate();
+  }
 
   delay(1000);
 }
 
 
 void loop() {
-  int actuator_count_reset = 0;
+  // If the calibration runs and fails (e.g one of the actuators are not connected), the program will stop
+  // while (!calibration_valid);
 
   // 10 - SLOW mode      - Switch is at the left most position
   // 01 - FAST mode      - Switch is at the right most position
@@ -263,7 +264,7 @@ void loop() {
   else if (many_read_digital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
   else next_period = MODERATE;
 
-  if (next_period != period) {
+  if (period != next_period) {
     period = next_period;
     if (current_state == RUNNING) next_state = REPOSITION;
   }
@@ -277,19 +278,21 @@ void loop() {
   
   time_read = millis();
 
-  button_light(current_state, time_read, ENABLE_BUTTON_LED);
+  if(ENABLE_BUTTON_LED) {
+    state_button_light(current_state, time_read);
+  }
 
   switch (current_state) {
     case IDLE:
       break;
 
     case SET_TIME:
+      last_timestamp = time_read; 
       next_state = RUNNING;
-      last_time = time_read;
       break;
 
     case RUNNING:
-      current_time = time_read - last_time;
+      current_time = time_read - last_timestamp;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         desired_pos[kth_actuator] = positionFunction((current_time % period), ACTUATOR_BIAS[kth_actuator]);
@@ -301,8 +304,12 @@ void loop() {
       break;
 
     case REPOSITION:
+      actuator_count_reset = 0;
+
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT; // 0.01 // In binary, float point arithmatic
+        if(desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
+          desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
+        }
       }
 
       // Moves actuators to desired position, calculating direction and speed for actuators
@@ -323,8 +330,10 @@ void loop() {
       break;
 
     case RETURN_HOME:
+      actuator_count_reset = 0;
+
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT; // 0.01 // In binary, float point arithmatic
+        desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
       }
 
       // Moves actuators to desired position, calculating direction and speed for actuators
