@@ -1,17 +1,17 @@
 #pragma once
 
 // Pulldown
-#define EMERGENCY_STOP_PIN 22
+#define EMERGENCY_STOP_PIN 50
 
 // For the button that changes which states for the platform
-#define STATE_BUTTON_PIN 44
+#define STATE_BUTTON_PIN 53
 
 // The LED on the button
-#define BUTTON_LED_PIN 47
+#define BUTTON_LED_PIN 48
 
 // Switch that changes the speed for the actuators (period)
-#define LEFT_SWITCH_PIN 40
-#define RIGTH_SWITCH_PIN 42
+#define LEFT_SWITCH_PIN 52
+#define RIGTH_SWITCH_PIN 51
 
 // Potentiometer for actuators
 #define ACTUATOR_POT_PIN_1 A9
