@@ -136,7 +136,7 @@ void loop() {
     
   }
   else if(current_state == 1){
-    lcd.print("SET_TIME     ");
+    lcd.print("SET TIME     ");
     lcd.setCursor(14, 1);
     lcd.write(byte(4));
   }
@@ -152,7 +152,7 @@ void loop() {
     lcd.write(byte(2));
   }
   else if(current_state == 4){
-    lcd.print("RETURN_HOME  ");
+    lcd.print("RETURN HOME  ");
     lcd.setCursor(14, 1);
     lcd.write(byte(0));
   }
