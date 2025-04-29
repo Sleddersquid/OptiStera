@@ -1,5 +1,8 @@
 #include "variables.h"
 #include <math.h>
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
 
 // How to control the actuators (motors), file organising and calibrate function are taken from,
 // https://github.com/progressiveautomations/Stewart-Platform/blob/master/arduino/platform/platform.ino
@@ -11,6 +14,69 @@
 // 4. Is it a concern that the lights light up when reset is done? -- No
 // 5. IMPORTANT: Add led light on the button -- DONE
 // 6. Soft reset/stop -- DONE, but works onyl for heave, not tested with bias of l_k(t)
+LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
+
+//making the symbols
+byte Heart[] = { //making a heart symbol
+  B00000,
+  B01010,
+  B11111,
+  B11111,
+  B01110,
+  B00100,
+  B00000,
+  B00000
+};
+byte Bell[] = { //bell symbol for emergency 
+  B00100,
+  B01110,
+  B01010,
+  B01010,
+  B01010,
+  B11111,
+  B00000,
+  B00100
+};
+byte circle[] = { //two arrows going in circle, symbolising repositioning
+  B01111,
+  B01001,
+  B11101,
+  B01001,
+  B10010,
+  B10111,
+  B10010,
+  B11110,
+};
+byte hourGlass[] = { //For idle, a waiting signal
+  B00000,
+  B00000,
+  B11111,
+  B01110,
+  B00100,
+  B01110,
+  B11111,
+  B00000,
+};
+byte time_set[] = { // the time/ clock signal 
+  B00000,
+  B00000,
+  B00000,
+  B00100,
+  B00100,
+  B00111,
+  B00000,
+  B00000,
+};
+byte runningstate[] = {
+  B00000,
+  B00000,
+  B00001,
+  B00010,
+  B10100,
+  B01000,
+  B00000,
+  B00000,
+};
 
 uint32_t blink_interval = 1000, previousMillis, current_time;  // in ms
 
@@ -193,6 +259,52 @@ void state_button_light(PlatformState state, uint32_t time) {
   }
 }
 
+void lcd_display_state(PlatformState state) {
+  lcd.setCursor(0, 0);
+  lcd.print("State:");
+
+  // Serial.println(current_state);
+  //spesifies where the current space should get printed 
+  lcd.setCursor(7,0);
+  lcd.print(state);
+
+  lcd.setCursor(0,1);
+  //If else loop to print the current state
+  if (state == 0){ 
+    //Prints IDLE and the symbol if the current state is 0
+    lcd.print("IDLE      ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(3));
+    
+  }
+  else if(state == 1){
+    lcd.print("SET TIME     ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(4));
+  }
+  else if(state == 2){
+    lcd.print("RUNNING        ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(5));
+    
+  }
+  else if(state == 3){
+    lcd.print("REPOSITION   ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(2));
+  }
+  else if(state == 4){
+    lcd.print("RETURN HOME  ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(0));
+  }
+  else if(state == 5){
+    lcd.print("EMERGENCY   ");
+    lcd.setCursor(14, 1);
+    lcd.write(byte(1));
+  }
+}
+
 int read_analogue_avg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
@@ -215,6 +327,19 @@ void setup() {
   // For SerialUSB communication
   // SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
+
+  // -------- LCD DISPLAY SETUP -------- //
+  lcd.init();
+  //lcd.begin(16, 2);
+  //Serial.begin(9600);
+  lcd.backlight();
+  //The syboles gets created
+  lcd.createChar(0, Heart);
+  lcd.createChar(1, Bell);
+  lcd.createChar(2, circle);
+  lcd.createChar(3, hourGlass);
+  lcd.createChar(4, time_set);
+  lcd.createChar(5, runningstate);
   
   pinMode(BUTTON_LED_PIN, OUTPUT);
 
@@ -280,6 +405,10 @@ void loop() {
 
   if(ENABLE_BUTTON_LED) {
     state_button_light(current_state, time_read);
+  }
+
+  if(ENABLE_LCD_DISPLAY) {
+    lcd_display_state(current_state);
   }
 
   switch (current_state) {

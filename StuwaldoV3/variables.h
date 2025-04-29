@@ -19,6 +19,8 @@
 #define ENABLE_BUTTON_LED 1
 
 // ----------- LCD DISPLAY ------------ //
+#define ENABLE_LCD_DISPLAY 1
+
 #define LCD_ADDRESS 0x27
 
 // ----------- GOOD PLACEMENT ------------ //
