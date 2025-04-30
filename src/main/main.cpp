@@ -47,17 +47,23 @@ cv::Point calculateCenter(const std::vector<cv::Point> &contour)
 
 // Must be global for signal handler
 
-// -------------------------- OPCUA -------------------------- //
-// opcua::Server server;
-lccv::PiCamera cam(0);
+// -------------------------- SIGNAL HANDLER -------------------------- //
+
+std::thread temp_thread;
+
+bool get_temp_running = true;
+bool camera_running = true;
 
 void signalHandler(int signum) {
-
+    bool get_temp_running = false;
+    bool camera_running = false;
 }
 
 int main()
 {
     signal(SIGTERM, signalHandler);
+
+
     
     cv::Point new_center(0, 0);
     // cv::Point old_center(0, 0);
@@ -87,6 +93,7 @@ int main()
     opcua::NodeId cameraNodeXId = {1, 1001};
     opcua::NodeId cameraNodeYId = {1, 1002};
     opcua::NodeId cameraNodeRadiusId = {1, 1003};
+    opcua::NodeId tempMeasurementNodeId = {1, 1004};
 
     opcua::Result<opcua::NodeId> parentNode =
         opcua::services::addVariable(
@@ -140,6 +147,17 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
+    // Server temp node 
+
+
+    temp_thread = std::thread([std::move(tempMeasurementNodeId)]() {
+        while (get_temp_running) {
+            // Get file, read file, close file, wait, repeat
+        }
+    });
+
+
+
     // -------------------------- OpenCV -------------------------- //
     std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
 
@@ -157,6 +175,8 @@ int main()
 
     // cv::Scalar hsv_upper_r(6, 236, 255); // 15, 255, 255
     // cv::Scalar hsv_lower_r(0, 174, 163);  // 0, 150, 50
+
+    lccv::PiCamera cam(0);
 
     cam.options->video_width = CAMERA_WIDTH;
     cam.options->video_height = CAMERA_HEIGHT;
@@ -218,7 +238,7 @@ int main()
     
     bool enable_print = false;
     
-    while (true)
+    while (camera_running)
     {
         cv::Mat image;
         if (!cam.getVideoFrame(image, 1000))
@@ -441,9 +461,9 @@ int main()
     // std::cout << "Average FPS: " << std::accumulate(fps_counter_vec.begin(), fps_counter_vec.end(), 0.0) / fps_counter_vec.size() << std::endl;
 
     server.stop();
-
     cam.stopVideo();
-
+    temp_thread.join(); // Join at bottom, to not hault camera if that would be the case
+    
     // cv::destroyWindow("Video");
     // cv::destroyWindow("Mask");
     // cv::destroyAllWindows();
