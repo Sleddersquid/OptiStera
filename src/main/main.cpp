@@ -14,6 +14,8 @@
 #include "includes/kalman.cpp"
 #include "includes/kalman.hpp"
 
+#include <numeric> // for std::accumulate
+
 // Sources
 // From image_recognition/first_iteration/color_recognition.cpp
 // From image_recognition/main/server_services_node.cpp
@@ -21,6 +23,9 @@
 #define CAMERA_HEIGHT 720    // Can be SD: 480, HD: 720, FHD: 1080, QHD: 1440
 #define CAMERA_WIDTH 1280    // Can be SD: 640, HD: 1280, FHD: 1920, QHD: 2560
 #define CAMERA_FRAMERATE 100 // If fps higher than what the thread can handle, it will just run lower fps.
+#define FPS_SAMPLES 100
+
+
 
 /**
  * @brief Function to calculate the center of a contour using moments
@@ -35,28 +40,37 @@ cv::Point calculateCenter(const std::vector<cv::Point> &contour)
     if (M.m00 != 0)
     {
         // See https://docs.opencv.org/3.4/d8/d23/classcv_1_1Moments.html for center of mass (x¯, y¯)
-        return cv::Point(static_cast<int>(M.m10 / M.m00), static_cast<int>(M.m01 / M.m00));
+        return cv::Point((int)(M.m10 / M.m00), (int)(M.m01 / M.m00));
     }
     return cv::Point(0, 0); // If no center is found, return (-1, -1)
 }
 
+// Must be global for signal handler
+
+// -------------------------- OPCUA -------------------------- //
+// opcua::Server server;
+lccv::PiCamera cam(0);
+
+void signalHandler(int signum) {
+
+}
+
 int main()
 {
-
+    signal(SIGTERM, signalHandler);
+    
     cv::Point new_center(0, 0);
     // cv::Point old_center(0, 0);
-
+    
     float radius;
-
+    
     auto start = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_time = std::chrono::duration<double, std::milli>(end - start);
-
+    
     // uint32_t delay_server_iterate = 0;
-
-    // -------------------------- OPCUA -------------------------- //
     opcua::ServerConfig config;
-    config.setApplicationName("open62541pp server objectRecgonition");
+    config.setApplicationName("open62541pp server objectRecognition");
     config.setApplicationUri("urn:open62541pp.server.application");
     config.setProductUri("https://open62541pp.github.io");
 
@@ -130,8 +144,8 @@ int main()
     std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
 
     cv::Mat mask_o, mask_r, HSV, sub_image, mask;
-    cv::Rect roi;
-    lccv::PiCamera cam(0);
+    // cv::Rect roi;
+
 
     // Was (0, 120, 120) and (10, 255, 255).
     // Lightings conditions such as sunlight might detect hands and face
@@ -152,6 +166,8 @@ int main()
     cam.options->setWhiteBalance(WhiteBalance_Modes::WB_INDOOR);
     // cam.options->list_cameras = true;
 
+    cam.startVideo();
+
     // cv::namedWindow("Post-Mask", cv::WINDOW_NORMAL);
     // cv::namedWindow("Video", cv::WINDOW_AUTOSIZE);
 
@@ -162,12 +178,11 @@ int main()
     // int x_cut, y_cut, x_height, y_width, x_noe, y_noe;
     cv::Point start_point(0, 0), end_point(0, 0);
 
-    cam.startVideo();
     // std::cout << cv::getBuildInformation() << std::endl;
     // std::cout << cv::useOptimized() << std::endl;
-
+    
     // ----------------- KALMANFILTER ----------------- //
-
+    
     //**********************************************************
     // PARAMETRIZATION: KALMAN INIT
     //**********************************************************
@@ -177,31 +192,32 @@ int main()
     //**********************************************************
     int iKalmanMode = 1;
     int iDebugMode = false;
-
+    
     int iTextOffsetCorrection_1 = 15; // PutText function has a small offset in y axis depending on the simbol you print (* or _)
     int iTextOffsetCorrection_2 = 7;
-
+    
     cv::Scalar K_corr_Color(0, 0, 255);
     cv::Scalar K_pred_Color(0, 255, 0);
     cv::Scalar GT_Color(255, 0, 0);
-
+    
     int iTextSize1 = 1;     // Test 3.1 and 3.3
     int iTextSize2 = 1.5;   // Test 3.1 and 3.3
     int iTextThickness = 1; // Test 3.1 and 3.3
     int iTestsOffset = 20;  // Test 3.1 and 3.3
-
+    
     int iFrameNum = 0;
-
+    
     cv::Point kalmanBall;
-
+    
     kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
-
+    
     int image_count = 0;
     int frame_count = 0;
     float fps = -1;
-
+    // std::vector<float> fps_counter_vec;
+    
     bool enable_print = false;
-
+    
     while (true)
     {
         cv::Mat image;
@@ -261,25 +277,27 @@ int main()
 
             // std::cout << "Rasius: " << radius << std::endl;
 
-            if (frame_count >= 100)
-            {
-                auto end = std::chrono::high_resolution_clock::now();
-                fps = frame_count * 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            // if (frame_count >= 50)
+            // {
+            //     auto end = std::chrono::high_resolution_clock::now();
+            //     fps = frame_count * 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-                frame_count = 0;
-                start = std::chrono::high_resolution_clock::now();
-            }
+            //     frame_count = 0;
+            //     fps_counter_vec.push_back(fps);
 
-            if (fps > 0)
-            {
-                std::ostringstream fps_label;
-                fps_label << std::fixed << std::setprecision(2);
-                fps_label << "FPS: " << fps;
-                std::string fps_label_str = fps_label.str();
-                std::cout << fps_label_str << std::endl;
+            //     start = std::chrono::high_resolution_clock::now();
+            // }
 
-                // cv::putText(image, fps_label_str.c_str(), cv::Point(CAMERA_HEIGHT - 50, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-            }
+            // if (fps > 0)
+            // {
+            //     std::ostringstream fps_label;
+            //     fps_label << std::fixed << std::setprecision(2);
+            //     fps_label << "FPS: " << fps;
+            //     std::string fps_label_str = fps_label.str();
+            //     std::cout << fps_label_str << std::endl;
+
+            //     // cv::putText(image, fps_label_str.c_str(), cv::Point(CAMERA_HEIGHT - 50, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+            // }
 
             // std::cout << "Ball.x =  " << enclosingCenter.x << std::endl
             //      << "Ball.y =  " << enclosingCenter.y << std::endl;
@@ -305,7 +323,7 @@ int main()
 
             kalmanBall = kalmanKF.Predict((cv::Point2i)enclosingCenter);
 
-            // Point p1 = Point(kalmanBall.x-10, kalmanBall.y-10); //Test 3.3
+            // Point p1 = Point(kalmanBall.x-10, kalmanBall.y-10)ø; //Test 3.3
             // // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); //Test 3.3
             // Point p1 = Point(kalmanBall.x - 10, kalmanBall.y - 10); // Test 3.3
             // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); // Test 3.3
@@ -416,9 +434,16 @@ int main()
         }
     }
 
+    // for (auto fps : fps_counter_vec) {
+    //     std::cout << "FPS: " << fps << std::endl;
+    // }
+
+    // std::cout << "Average FPS: " << std::accumulate(fps_counter_vec.begin(), fps_counter_vec.end(), 0.0) / fps_counter_vec.size() << std::endl;
+
     server.stop();
 
     cam.stopVideo();
+
     // cv::destroyWindow("Video");
     // cv::destroyWindow("Mask");
     // cv::destroyAllWindows();
