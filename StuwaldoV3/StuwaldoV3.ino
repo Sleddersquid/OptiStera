@@ -1,8 +1,8 @@
-#include "variables.h"
 #include <math.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
+#include "variables.h"
 
 // How to control the actuators (motors), file organising and calibrate function are taken from,
 // https://github.com/progressiveautomations/Stewart-Platform/blob/master/arduino/platform/platform.ino
@@ -138,7 +138,7 @@ void calibrate() {
   // Stop the extension, get average anlogue readings
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
     analogWrite(ACTUATOR_PWM_PINS[kth_actuator], 0);
-    end_readings[kth_actuator] = read_analogue_avg(ACTUATOR_POT_PINS[kth_actuator]);
+    end_readings[kth_actuator] = readAnalogueAvg(ACTUATOR_POT_PINS[kth_actuator]);
 
     // Check if the kth_actuators are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_actuator] - END_POS[kth_actuator]) < OFF_THRESHOLD);
@@ -154,7 +154,7 @@ void calibrate() {
   // Stop the retraction, get average analog readings
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
     analogWrite(ACTUATOR_PWM_PINS[kth_actuator], 0);
-    zero_readings[kth_actuator] = read_analogue_avg(ACTUATOR_POT_PINS[kth_actuator]);
+    zero_readings[kth_actuator] = readAnalogueAvg(ACTUATOR_POT_PINS[kth_actuator]);
 
     // Check if the actuators are powered (reading is valid)
     calibration_valid = (abs(zero_readings[kth_actuator] - ZERO_POS[kth_actuator]) < OFF_THRESHOLD);
@@ -185,9 +185,9 @@ void calibrate() {
   }
 }
 
-void change_state() {
+void changeState() {
   // If button is not HIGH in all measurements assume noise and don't trigger state change
-  if (many_read_digital(STATE_BUTTON_PIN) != BUTTON_MEASUREMENTS) return;
+  if (manyReadDigital(STATE_BUTTON_PIN) != BUTTON_MEASUREMENTS) return;
 
   interrupt_time = millis();
   // If interrupts comes faster than debounce_interval, assume it's a bounce and ignore
@@ -205,10 +205,10 @@ float positionFunction(uint32_t t, float bias) {
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
-void move_to_pos() {
+void moveToPos() {
   // Get the current positon of all actuators and set dirrection based of the position difference
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-    current_pos[kth_actuator] = read_actuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
+    current_pos[kth_actuator] = readActuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
     pos_diff[kth_actuator] = desired_pos[kth_actuator] - current_pos[kth_actuator];
 
@@ -245,7 +245,7 @@ void move_to_pos() {
   // SerialUSB.println("");
 }
 
-void state_button_light(PlatformState state, uint32_t time) {
+void stateButtonLight(PlatformState state, uint32_t time) {
   switch (current_state) {
     case IDLE:
       if (time - previousMillis >= blink_interval) {
@@ -272,7 +272,7 @@ void state_button_light(PlatformState state, uint32_t time) {
   }
 }
 
-void lcd_display_state(PlatformState state) {
+void lcdDisplayState(PlatformState state) {
   lcd.setCursor(0, 0);
   lcd.print("State:");
 
@@ -316,7 +316,7 @@ void lcd_display_state(PlatformState state) {
   }
 }
 
-long read_analogue_avg(int pin) {
+long readAnalogueAvg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
   uint32_t reads = 0;
@@ -326,7 +326,7 @@ long read_analogue_avg(int pin) {
   return (reads / ACTUATOR_MEASUREMENTS);
 }
 
-int many_read_digital(int pin) {
+int manyReadDigital(int pin) {
   int reads = 0;
   for (int i = 0; i < BUTTON_MEASUREMENTS; i++) {
     reads += digitalRead(pin);
@@ -334,8 +334,8 @@ int many_read_digital(int pin) {
   return reads;
 }
 
-uint16_t read_actuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
-  return constrain(map(read_analogue_avg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
+uint16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
+  return constrain(map(readAnalogueAvg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
 
 }
 
@@ -366,7 +366,7 @@ void setup() {
   pinMode(RIGTH_SWITCH_PIN, INPUT);
 
   pinMode(STATE_BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(STATE_BUTTON_PIN), change_state, RISING);
+  attachInterrupt(digitalPinToInterrupt(STATE_BUTTON_PIN), changeState, RISING);
 
   pinMode(EMERGENCY_STOP_PIN, INPUT);
 
@@ -403,8 +403,8 @@ void loop() {
   // 10 - SLOW mode      - Switch is at the left most position
   // 01 - FAST mode      - Switch is at the right most position
   // 00 - Moderate mode  - Switch is at the middle position
-  if (many_read_digital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
-  else if (many_read_digital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
+  if (manyReadDigital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
+  else if (manyReadDigital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
   else next_period = MODERATE;
 
   if (period != next_period) {
@@ -412,12 +412,12 @@ void loop() {
     if (current_state == RUNNING) next_state = REPOSITION;
   }
 
-  if(many_read_digital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
+  if(manyReadDigital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
     next_state = EMERGENCY;
   }
 
   // LCD display. Creates a big delay, for each iteration. Optimal, each iteration should be 1ms (is 3ms with a lot of SerialUSB.print)
-  lcd_display_state(current_state);
+  lcdDisplayState(current_state);
 
   // Change state
   current_state = next_state;
@@ -429,7 +429,7 @@ void loop() {
 
   // Takes little time to set digital pin output, therefor no current_state != next_state
   if(ENABLE_BUTTON_LED) {
-    state_button_light(current_state, time_read);
+    stateButtonLight(current_state, time_read);
   }
 
   switch (current_state) {
@@ -449,7 +449,7 @@ void loop() {
       }
     
       // Moves actuators to desired position, calculating direction and speed for actuators
-      move_to_pos();
+      moveToPos();
 
       break;
 
@@ -474,7 +474,7 @@ void loop() {
         next_state = SET_TIME;
       } else {
         // Moves actuators to desired position, calculating direction and speed for actuators
-        move_to_pos();
+        moveToPos();
       }
 
 
@@ -500,7 +500,7 @@ void loop() {
         next_state = IDLE;
       } else {
         // Moves actuators to desired position, calculating direction and speed for actuators
-        move_to_pos();
+        moveToPos();
       }
 
       break;
@@ -508,13 +508,13 @@ void loop() {
     case EMERGENCY:
       // Read and set desired pos for all actuators, so there is no big moment of inertia when going over to return home state
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        current_pos[kth_actuator] = read_actuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
+        current_pos[kth_actuator] = readActuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
         desired_pos[kth_actuator] = current_pos[kth_actuator];
       }
 
       // If emergency is LOW, then emergency has been realeased and move to return home state
-      if (many_read_digital(EMERGENCY_STOP_PIN) == 0) {
+      if (manyReadDigital(EMERGENCY_STOP_PIN) == 0) {
         next_state = RETURN_HOME;
       }
 
