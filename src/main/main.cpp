@@ -10,11 +10,13 @@
 
 #include <thread>
 #include <chrono>
+#include <fstream>
+
+#include <numeric> // for std::accumulate
 
 #include "includes/kalman.cpp"
 #include "includes/kalman.hpp"
 
-#include <numeric> // for std::accumulate
 
 // Sources
 // From image_recognition/first_iteration/color_recognition.cpp
@@ -62,8 +64,6 @@ void signalHandler(int signum) {
 int main()
 {
     signal(SIGTERM, signalHandler);
-
-
     
     cv::Point new_center(0, 0);
     // cv::Point old_center(0, 0);
@@ -89,7 +89,7 @@ int main()
     opcua::Server server(std::move(config));
 
     // node ids = {namespace, id}
-    opcua::NodeId parentNodeId = {1, 1000};
+    opcua::NodeId objectParentNodeId = {1, 1000};
     opcua::NodeId cameraNodeXId = {1, 1001};
     opcua::NodeId cameraNodeYId = {1, 1002};
     opcua::NodeId cameraNodeRadiusId = {1, 1003};
@@ -99,7 +99,7 @@ int main()
         opcua::services::addVariable(
             server,
             opcua::ObjectId::ObjectsFolder,
-            parentNodeId,
+            objectParentNodeId,
             "CameraValues",
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ)
@@ -111,7 +111,7 @@ int main()
     opcua::Result<opcua::NodeId> Node_Camera_X =
         opcua::services::addVariable(
             server,
-            parentNodeId,
+            objectParentNodeId,
             cameraNodeXId,
             "CameraX",
             opcua::VariableAttributes{}
@@ -124,7 +124,7 @@ int main()
     opcua::Result<opcua::NodeId> Node_Camera_Y =
         opcua::services::addVariable(
             server,
-            parentNodeId,
+            objectParentNodeId,
             cameraNodeYId,
             "CameraY",
             opcua::VariableAttributes{}
@@ -137,7 +137,7 @@ int main()
     opcua::Result<opcua::NodeId> Node_Camera_Radius =
         opcua::services::addVariable(
             server,
-            parentNodeId,
+            objectParentNodeId,
             cameraNodeRadiusId,
             "CameraRadius",
             opcua::VariableAttributes{}
@@ -147,12 +147,38 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
-    // Server temp node 
+    // Server temp node
+        opcua::Result<opcua::NodeId> Node_Camera_Radius =
+        opcua::services::addVariable(
+            server,
+            objectParentNodeId, // Server node id
+            tempMeasurementNodeId,
+            "RaspberryPiTemperature",
+            opcua::VariableAttributes{}
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setDataType<float>()
+                .setValue(opcua::Variant(41.0f)),
+            opcua::VariableTypeId::BaseDataVariableType,
+            opcua::ReferenceTypeId::HasComponent);
 
 
-    temp_thread = std::thread([std::move(tempMeasurementNodeId)]() {
+    temp_thread = std::thread([tempMeasurementNodeId]() {
+        float temp = 0.0f;
+
+
+
         while (get_temp_running) {
-            // Get file, read file, close file, wait, repeat
+            // Open file 
+            std::ifstream temp_file("/sys/class/thermal/thermal_zone0/temp");
+            // if file not oppened 
+            if (!temp_file.is_open()) {
+                return;
+            }
+
+            opcua::services::writeDataValue(server, tempMeasurementNodeId, opcua::DataValue(opcua::Variant(temp)));
+            
+
+            // Sleep here
         }
     });
 
