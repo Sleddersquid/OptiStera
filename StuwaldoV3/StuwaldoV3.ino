@@ -230,6 +230,19 @@ void move_to_pos() {
       analogWrite(ACTUATOR_PWM_PINS[kth_actuator], 0);
     }
   }
+
+  for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
+    SerialUSB.print(" Actuator ");
+    SerialUSB.print(kth_actuator);
+    SerialUSB.print(": ");
+    SerialUSB.print(current_pos[kth_actuator]);
+    SerialUSB.print(", ");
+    SerialUSB.print(desired_pos[kth_actuator]);
+    SerialUSB.print(", ");
+    SerialUSB.print(direction[kth_actuator]);
+  }
+
+  SerialUSB.println("");
 }
 
 void state_button_light(PlatformState state, uint32_t time) {
@@ -272,7 +285,7 @@ void lcd_display_state(PlatformState state) {
   //If else loop to print the current state
   if (state == 0){ 
     //Prints IDLE and the symbol if the current state is 0
-    lcd.print("IDLE      ");
+    lcd.print("IDLE       ");
     lcd.setCursor(14, 1);
     lcd.write(byte(3));
     
@@ -305,7 +318,7 @@ void lcd_display_state(PlatformState state) {
   }
 }
 
-int read_analogue_avg(int pin) {
+long read_analogue_avg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
   uint32_t reads = 0; 
@@ -398,17 +411,20 @@ void loop() {
     next_state = EMERGENCY;
   }
 
+  // if (current_state != next_state) {
+  // lcd_display_state(current_state);
+  // }
+
   // Change state
   current_state = next_state;
-  
+
+  SerialUSB.print("Current State: ");
+  SerialUSB.println(current_state);
+
   time_read = millis();
 
   if(ENABLE_BUTTON_LED) {
     state_button_light(current_state, time_read);
-  }
-
-  if(ENABLE_LCD_DISPLAY) {
-    lcd_display_state(current_state);
   }
 
   switch (current_state) {
@@ -446,7 +462,7 @@ void loop() {
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         // Check if the desired position has been reached
-        if (current_pos[kth_actuator] - positionFunction(0, ACTUATOR_BIAS[kth_actuator]) < POS_THRESHOLD) {
+        if (current_pos[kth_actuator] - positionFunction(0, ACTUATOR_BIAS[kth_actuator]) <= POS_THRESHOLD) {
           actuator_count_reset++;
         }
       }
@@ -462,7 +478,9 @@ void loop() {
       actuator_count_reset = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
+        if(desired_pos[kth_actuator] > 0) {
+          desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
+        }
       }
 
       // Moves actuators to desired position, calculating direction and speed for actuators

@@ -1,6 +1,8 @@
 #include "variables.h"
 #include <math.h>
 
+int MOTOR = 1;
+
 int PWM_VALUE = 0;
 
 int pot_value_read;
@@ -46,7 +48,7 @@ void calibrate()
 
     // Check if the kth_motors are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_motor] - END_POS[kth_motor]) < OFF_THRESHOLD);
-    if (!calibration_valid) { break; }
+    // if (!calibration_valid) { break; }
   }
   // Retract all actuators
   for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor)
@@ -66,9 +68,25 @@ void calibrate()
 
       // Check if the motors are powered (reading is valid)
       calibration_valid = (abs(zero_readings[kth_motor] - ZERO_POS[kth_motor]) < OFF_THRESHOLD);
-      if (!calibration_valid) { break; }
+      // if (!calibration_valid) { break; }
     }
   }
+
+  SerialUSB.print("calibration_valid: ");
+  SerialUSB.println(calibration_valid);
+
+  for (int kth_motor = 0; kth_motor < NUM_MOTORS; ++kth_motor)
+    {
+      SerialUSB.print(" Motor ");
+      SerialUSB.print(kth_motor);
+      SerialUSB.print(": ");
+      SerialUSB.print(zero_readings[kth_motor]);
+      SerialUSB.print(", ");
+      SerialUSB.print(end_readings[kth_motor]);
+
+    }
+
+  SerialUSB.println("");
 
   // Set the new calibration values if found to be valid
   if (calibration_valid)
@@ -118,8 +136,7 @@ void move_to_pos()
 void setup()
 {
 
-  while (!SerialUSB)
-    ; // While not connected to the USB port, do not proceed
+  while (!SerialUSB); // While not connected to the USB port, do not proceed
 
   SerialUSB.begin(BAUD_RATE);
   pinMode(POTENSIAMETER_PIN, INPUT);
@@ -158,26 +175,26 @@ void loop()
 {
   // will not run unless calibration is valid.
   // If no claibration is done, we assume that calibration is already done previously
-  while (!calibration_valid);
+  // while (!calibration_valid);
 
   // actual_pos = map(readMany(255, POT_PIN), ZERO_POS, END_POS, MIN_POS, MAX_POS);
 
   time_read = millis();
 
-  time_set[0] = time_read % PERIOD;
+  time_set[MOTOR] = time_read % PERIOD;
 
   // desired_pos = readMany(255, POT_PIN_V);
-  desired_pos[0] = position_function(time_set[0], MOTOR_BIAS[0]);
+  desired_pos[MOTOR] = position_function(time_set[MOTOR], MOTOR_BIAS[MOTOR]);
 
   if (true) {
     move_to_pos();
   } else {
-    analogWrite(MOTOR_POT_PINS[0], 0);
+    analogWrite(MOTOR_POT_PINS[MOTOR], MOTOR);
   }
 
   SerialUSB.print("Desired pos: ");
-  SerialUSB.println(desired_pos[0]);
+  SerialUSB.println(desired_pos[MOTOR]);
 
   SerialUSB.print("Actual pos: ");
-  SerialUSB.println(actual_pos[0]);
+  SerialUSB.println(actual_pos[MOTOR]);
 }
