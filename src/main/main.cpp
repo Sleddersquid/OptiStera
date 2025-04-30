@@ -27,6 +27,7 @@
 #define CAMERA_FRAMERATE 100 // If fps higher than what the thread can handle, it will just run lower fps.
 #define FPS_SAMPLES 100
 
+#define TEMP_FREQUENCY 1000 // in ms
 
 
 /**
@@ -164,21 +165,30 @@ int main()
 
     temp_thread = std::thread([tempMeasurementNodeId]() {
         float temp = 0.0f;
-
-
+        std::string file_content; 
 
         while (get_temp_running) {
+            // Sleep here because of continue
+            std::this_thread::sleep_for(std::chrono::milliseconds(TEMP_FREQUENCY));
+
             // Open file 
             std::ifstream temp_file("/sys/class/thermal/thermal_zone0/temp");
             // if file not oppened 
             if (!temp_file.is_open()) {
-                return;
+                continue;
             }
+
+            // Read the file
+            std::getline(temp_file, file_content);
+
+            // Close the file
+            temp_file.close();
+
+            temp = std::stof()(file_content) / 100.0f; // Convert to float
 
             opcua::services::writeDataValue(server, tempMeasurementNodeId, opcua::DataValue(opcua::Variant(temp)));
             
-
-            // Sleep here
+            std::cout << "Temperature: " << temp << std::endl;
         }
     });
 
