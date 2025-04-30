@@ -6,6 +6,7 @@ The final code for the control of parallel manipulator is under the project Stuw
 |---------------------------|---------------------------------------------------------------------------------------|
 | `Address_scanner_I2C`     | To scan for I2C address                                                               |
 | `Calibration_platform`    | Calibration for the platform, calibrated values are read in the serial                |
+| `LCD_Display`             | LCD display with states and cute messages                                             |
 | `libraries`               | All libraries used thoughout this project                                             |
 | `MATLAB_code`             | MATLAB code used for plotting data readings of actuators from the Arduino Due         |
 | `one_leg_controll`        | Movement of one actuator at a time                                                    |
