@@ -9,7 +9,7 @@
 #define AMPLUTIDE 400 // pot values
 #define VERTICAL_SHIFT 511.5 // pot values
 
-#define GRADTIENT 0.25 // 0.01 // In binary, float point arithmatic
+#define GRADTIENT 2 // 0.01 // In binary, float point arithmatic
 
 #define ACTUATOR_MEASUREMENTS 255 // measurements to take
 #define BUTTON_MEASUREMENTS 10 // measurements to take

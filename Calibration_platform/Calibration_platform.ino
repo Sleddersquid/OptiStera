@@ -58,7 +58,7 @@ void calibrate()
 
     // Check if the kth_motors are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_motor] - END_POS[kth_motor]) < OFF_THRESHOLD);
-    // if (!calibration_valid) { break; }
+    if (!calibration_valid) { break; }
   }
 
   while (true);
@@ -90,7 +90,7 @@ void calibrate()
 
       // Check if the motors are powered (reading is valid)
       calibration_valid = (abs(zero_readings[kth_motor] - ZERO_POS[kth_motor]) < OFF_THRESHOLD);
-      // if (!calibration_valid) { break; }
+      if (!calibration_valid) { break; }
     }
   }
 

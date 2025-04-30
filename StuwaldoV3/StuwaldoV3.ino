@@ -106,8 +106,8 @@ PlatformState next_state = EMERGENCY;
 int actuator_count_reset = 0;
 
 // The period sets the speed for the actuators
-uint16_t period = MODERATE;
-uint16_t next_period = period;
+uint32_t period = FAST;
+uint32_t next_period = period;
 
 uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
@@ -200,14 +200,14 @@ void change_state() {
 }
 
 // l_k(t) with k = 1, 2, 3 and t in ms
-float positionFunction(int t, float bias) { 
+float positionFunction(uint32_t t, float bias) { 
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
 void move_to_pos() {
   // Get the current positon of all actuators and set dirrection based of the
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-    current_pos[kth_actuator] = map(read_analogue_avg(ACTUATOR_POT_PINS[kth_actuator]), ZERO_POS[kth_actuator], END_POS[kth_actuator], MIN_POS, MAX_POS);
+    current_pos[kth_actuator] = read_actuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
     pos_diff[kth_actuator] = desired_pos[kth_actuator] - current_pos[kth_actuator];
 
@@ -231,18 +231,18 @@ void move_to_pos() {
     }
   }
 
-  for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
-    SerialUSB.print(" Actuator ");
-    SerialUSB.print(kth_actuator);
-    SerialUSB.print(": ");
-    SerialUSB.print(current_pos[kth_actuator]);
-    SerialUSB.print(", ");
-    SerialUSB.print(desired_pos[kth_actuator]);
-    SerialUSB.print(", ");
-    SerialUSB.print(direction[kth_actuator]);
-  }
+  // for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
+  //   SerialUSB.print(" Actuator ");
+  //   SerialUSB.print(kth_actuator);
+  //   SerialUSB.print(": ");
+  //   SerialUSB.print(current_pos[kth_actuator]);
+  //   SerialUSB.print(", ");
+  //   SerialUSB.print(desired_pos[kth_actuator]);
+  //   SerialUSB.print(", ");
+  //   SerialUSB.print(direction[kth_actuator]);
+  // }
 
-  SerialUSB.println("");
+  // SerialUSB.println("");
 }
 
 void state_button_light(PlatformState state, uint32_t time) {
@@ -336,6 +336,11 @@ int many_read_digital(int pin) {
   return reads;
 }
 
+uint16_t read_actuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
+  return constrain(map(read_analogue_avg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
+
+}
+
 void setup() {
   // For SerialUSB communication
   // SerialUSB.begin(BAUD_RATE);
@@ -412,14 +417,14 @@ void loop() {
   }
 
   // if (current_state != next_state) {
-  // lcd_display_state(current_state);
+  //   lcd_display_state(current_state);
   // }
 
   // Change state
   current_state = next_state;
 
-  SerialUSB.print("Current State: ");
-  SerialUSB.println(current_state);
+  // SerialUSB.print("Current State: ");
+  // SerialUSB.println(current_state);
 
   time_read = millis();
 
@@ -457,9 +462,6 @@ void loop() {
         }
       }
 
-      // Moves actuators to desired position, calculating direction and speed for actuators
-      move_to_pos();
-
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         // Check if the desired position has been reached
         if (current_pos[kth_actuator] - positionFunction(0, ACTUATOR_BIAS[kth_actuator]) <= POS_THRESHOLD) {
@@ -467,10 +469,14 @@ void loop() {
         }
       }
 
-      // If all three actuators have reached their desired position, go to next state
       if (actuator_count_reset == NUM_ACTUATORS) {
+        // If all three actuators have reached their desired position, go to next state
         next_state = SET_TIME;
+      } else {
+        // Moves actuators to desired position, calculating direction and speed for actuators
+        move_to_pos();
       }
+
 
       break;
 
@@ -479,13 +485,9 @@ void loop() {
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if(desired_pos[kth_actuator] > 0) {
-          desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
+          desired_pos[kth_actuator] = constrain(desired_pos[kth_actuator] - GRADTIENT, MIN_POS, MAX_POS);
         }
       }
-
-      // Moves actuators to desired position, calculating direction and speed for actuators
-      move_to_pos();
-
       // Check if the desired position has been reached
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if (current_pos[kth_actuator] <= POS_THRESHOLD) {
@@ -493,22 +495,25 @@ void loop() {
         }
       }
 
-      // If all three actuators have reached their desired position, go to next state
       if (actuator_count_reset == NUM_ACTUATORS) {
+        // If all three actuators have reached their desired position, go to next state
         next_state = IDLE;
+      } else {
+        // Moves actuators to desired position, calculating direction and speed for actuators
+        move_to_pos();
       }
 
       break;
 
     case EMERGENCY:
-      // Read and set desired pos for all actuators, so there is no big moment of inertia when going over to stopping state
+      // Read and set desired pos for all actuators, so there is no big moment of inertia when going over to return home state
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        current_pos[kth_actuator] = map(read_analogue_avg(ACTUATOR_POT_PINS[kth_actuator]), ZERO_POS[kth_actuator], END_POS[kth_actuator], MIN_POS, MAX_POS);
+        current_pos[kth_actuator] = read_actuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
         desired_pos[kth_actuator] = current_pos[kth_actuator];
       }
 
-      // If emergency is LOW, then emergency has been realeased and move to stopping state
+      // If emergency is LOW, then emergency has been realeased and move to return home state
       if (many_read_digital(EMERGENCY_STOP_PIN) == 0) {
         next_state = RETURN_HOME;
       }
