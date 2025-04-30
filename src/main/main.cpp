@@ -10,6 +10,8 @@
 
 #include <thread>
 #include <chrono>
+#include <atomic>
+#include <string>
 #include <fstream>
 
 #include <numeric> // for std::accumulate
@@ -94,7 +96,6 @@ int main()
     opcua::NodeId cameraNodeXId = {1, 1001};
     opcua::NodeId cameraNodeYId = {1, 1002};
     opcua::NodeId cameraNodeRadiusId = {1, 1003};
-    opcua::NodeId tempMeasurementNodeId = {1, 1004};
 
     opcua::Result<opcua::NodeId> parentNode =
         opcua::services::addVariable(
@@ -148,25 +149,26 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
-    // Server temp node
-        opcua::Result<opcua::NodeId> Node_Camera_Radius =
+            
+    temp_thread = std::thread([&server]() {
+        float temp = 0.0f;
+        std::string file_content;
+        opcua::NodeId tempMeasurementNodeId = {1, 1004};
+            
+        // Server temp node
+        opcua::Result<opcua::NodeId> Node_RaspberryPi_temp =
         opcua::services::addVariable(
             server,
-            objectParentNodeId, // Server node id
+            opcua::ObjectId::Server, // Server node id
             tempMeasurementNodeId,
             "RaspberryPiTemperature",
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
                 .setDataType<float>()
-                .setValue(opcua::Variant(41.0f)),
+                .setValue(opcua::Variant(0.0f)),
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
-
-
-    temp_thread = std::thread([tempMeasurementNodeId]() {
-        float temp = 0.0f;
-        std::string file_content; 
-
+        
         while (get_temp_running) {
             // Sleep here because of continue
             std::this_thread::sleep_for(std::chrono::milliseconds(TEMP_FREQUENCY));
@@ -184,11 +186,11 @@ int main()
             // Close the file
             temp_file.close();
 
-            temp = std::stof()(file_content) / 100.0f; // Convert to float
+            temp = (std::stof(file_content) / 1000.0f);
 
             opcua::services::writeDataValue(server, tempMeasurementNodeId, opcua::DataValue(opcua::Variant(temp)));
             
-            std::cout << "Temperature: " << temp << std::endl;
+            // std::cout << "tamp: " << temp << std::endl;
         }
     });
 
