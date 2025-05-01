@@ -142,7 +142,6 @@ void calibrate() {
 
     // Check if the kth_actuators are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_actuator] - END_POS[kth_actuator]) < OFF_THRESHOLD);
-    if (!calibration_valid) { break; }
   }
   // Retract all actuators
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
@@ -158,7 +157,6 @@ void calibrate() {
 
     // Check if the actuators are powered (reading is valid)
     calibration_valid = (abs(zero_readings[kth_actuator] - ZERO_POS[kth_actuator]) < OFF_THRESHOLD);
-    if (!calibration_valid) { break; }
   }
 
   // IF CALIBRATION IS TO BE DONE MANUALY, uncomment this
@@ -391,8 +389,6 @@ void setup() {
   if(CALIBRATE) {
     calibrate();
   }
-
-  delay(1000);
 }
 
 
