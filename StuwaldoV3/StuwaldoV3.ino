@@ -111,7 +111,7 @@ int actuator_count_reset = 0;
 uint16_t period = MODERATE;
 uint16_t next_period = period;
 
-uint32_t time_read, last_timestamp;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
+uint32_t time_read, last_timestamp, current_time;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
 int32_t desired_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
 int32_t current_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
@@ -412,7 +412,7 @@ void loop() {
     next_state = EMERGENCY;
   }
 
-  if (current_state != next_state) {
+  if (ENABLE_LCD_DISPLAY && (current_state != next_state)) {
     lcdDisplayState(next_state);
   }
 
