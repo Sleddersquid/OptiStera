@@ -17,7 +17,7 @@
 LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
 
 //making the symbols for the print
-byte Heart[] = { //making a heart symbol
+byte Heart[] = {  //making a heart symbol
   B00000,
   B01010,
   B11111,
@@ -27,7 +27,7 @@ byte Heart[] = { //making a heart symbol
   B00000,
   B00000
 };
-byte Bell[] = { //bell symbol for emergency 
+byte Bell[] = {  //bell symbol for emergency
   B00100,
   B01110,
   B01010,
@@ -37,7 +37,8 @@ byte Bell[] = { //bell symbol for emergency
   B00000,
   B00100
 };
-byte circle[] = { //two arrows going in circle, symbolising repositioning
+byte circle[] = {
+  //two arrows going in circle, symbolising repositioning
   B01111,
   B01001,
   B11101,
@@ -47,7 +48,8 @@ byte circle[] = { //two arrows going in circle, symbolising repositioning
   B10010,
   B11110,
 };
-byte hourGlass[] = { //For idle, a waiting signal
+byte hourGlass[] = {
+  //For idle, a waiting signal
   B00000,
   B00000,
   B11111,
@@ -57,7 +59,8 @@ byte hourGlass[] = { //For idle, a waiting signal
   B11111,
   B00000,
 };
-byte time_set[] = { // the time/ clock signal 
+byte time_set[] = {
+  // the time/ clock signal
   B00000,
   B00000,
   B00000,
@@ -78,29 +81,29 @@ byte runningstate[] = {
   B00000,
 };
 
-uint32_t blink_interval = 1000, previousMillis, current_time;  // in ms
+uint32_t blink_interval = 1000, previousMillis;  // in ms
 bool ledState = 0;
 
 // Enum for different speeds for the actuator
-enum ActuatorSpeed { // in ms
-  SLOW = 11000,   
+enum ActuatorSpeed {  // in ms
+  SLOW = 11000,
   MODERATE = 8000,
-  FAST = 5000     
+  FAST = 5000
 };
 
 // Enum for modes
 enum PlatformState {
-  IDLE,     // The platform is waiting for a signal to start
-  SET_TIME, // Stamp the time read, so that l_k(t) start at 0 every change between IDLE -> RUNNING
-  RUNNING,  // The platform is moving and has heave motion
-  REPOSITION,    // For when the platform changes speeds (change in P in l_k(t)), reset to l_k(t) and start again with current speed  
-  RETURN_HOME, // For stopping the platform completely, and goes back to IDLE state 
-  EMERGENCY // For when the emergency button has been pressed, and the H-bridge loses power. 
+  IDLE,         // The platform is waiting for a signal to start
+  SET_TIME,     // Stamp the time read, so that l_k(t) start at 0 every change between IDLE -> RUNNING
+  RUNNING,      // The platform is moving and has heave motion
+  REPOSITION,   // For when the platform changes speeds (change in P in l_k(t)), reset to l_k(t) and start again with current speed
+  RETURN_HOME,  // For stopping the platform completely, and goes back to IDLE state
+  EMERGENCY     // For when the emergency button has been pressed, and the H-bridge loses power.
 };
 
 // When the program starts, the actuators go to fully retracted position and then goes to IDLE
-volatile PlatformState current_state = EMERGENCY; // Will be populated at iteration of loop
-PlatformState next_state = EMERGENCY;
+volatile PlatformState current_state = EMERGENCY;  // Will be populated at iteration of loop
+volatile PlatformState next_state = EMERGENCY;
 
 int actuator_count_reset = 0;
 
@@ -108,18 +111,18 @@ int actuator_count_reset = 0;
 uint16_t period = MODERATE;
 uint16_t next_period = period;
 
-uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
+uint32_t time_read, last_timestamp;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
-int32_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
-int32_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
-int32_t pos_diff[NUM_ACTUATORS];      // Ranges from -1023..1023
-// uint16_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
-bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
+int32_t desired_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
+int32_t current_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
+int32_t pos_diff[NUM_ACTUATORS] = { 0, 0, 0 };     // Ranges from -1023..1023
+int8_t pwm_value[NUM_ACTUATORS] = { 0, 0, 0 };
+bool direction[NUM_ACTUATORS] = { 0, 0, 0 };         // 0 = RETRACT, 1 = EXTEND
 
 // Variables used only for calibration
 int16_t end_readings[NUM_ACTUATORS];   // Readings from fully extended position
 int16_t zero_readings[NUM_ACTUATORS];  // Readings from fully retracted position
-bool calibration_valid = true;  // Will be set to false if calibration was not done correctly, and program stops
+bool calibration_valid = true;         // Will be set to false if calibration was not done correctly, and program stops
 
 uint32_t interrupt_time = 0;
 volatile uint32_t last_interrupt_time = 0;
@@ -199,7 +202,7 @@ void change_state() {
 }
 
 // l_k(t) with k = 1, 2, 3 and t in ms
-int32_t positionFunction(int t, float bias) { 
+int32_t positionFunction(int t, float bias) {
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
@@ -210,37 +213,40 @@ void moveToPos() {
 
     pos_diff[kth_actuator] = desired_pos[kth_actuator] - current_pos[kth_actuator];
 
-    // Se nærmere på
-    if (current_pos[kth_actuator] < desired_pos[kth_actuator]) {
-      direction[kth_actuator] = EXTEND;
-    } else {
-      direction[kth_actuator] = RETRACT;
+    // Calculate speed and direction
+    if (abs(pos_diff[kth_actuator]) >= POS_THRESHOLD) {
+      pwm_value[kth_actuator] = constrain(abs(pos_diff[kth_actuator] * PWM_GAIN), MIN_PWM, MAX_PWM);
+      if (current_pos[kth_actuator] < desired_pos[kth_actuator]) {
+        direction[kth_actuator] = EXTEND;
+      } else {
+        direction[kth_actuator] = RETRACT;
+      }
     }
   }
 
   // move the actuators, with speed (pwm) and direction
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
     if (abs(pos_diff[kth_actuator]) >= POS_THRESHOLD) {
-      // pwm_value[kth_actuator] = pos_diff[kth_actuator]);
 
       digitalWrite(ACTUATOR_DIR_PINS[kth_actuator], direction[kth_actuator]);
-      analogWrite(ACTUATOR_PWM_PINS[kth_actuator], constrain(abs(pos_diff[kth_actuator]* PWM_GAIN), MIN_PWM, MAX_PWM));
+      analogWrite(ACTUATOR_PWM_PINS[kth_actuator], pwm_value[kth_actuator]);
     } else {
       analogWrite(ACTUATOR_PWM_PINS[kth_actuator], 0);
     }
   }
 
-  for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
-    SerialUSB.print(" Actuator ");
-    SerialUSB.print(kth_actuator + 1);
-    SerialUSB.print(": ");
-    SerialUSB.print(current_pos[kth_actuator]);
-    SerialUSB.print(", ");
-    SerialUSB.print(desired_pos[kth_actuator]);
-    SerialUSB.print(", ");
-    SerialUSB.print(direction[kth_actuator]);
-  }
-  SerialUSB.println("");
+  //   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
+  //     SerialUSB.print(" Actuator ");
+  //     SerialUSB.print(kth_actuator + 1);
+  //     SerialUSB.print(": ");
+  //     SerialUSB.print(current_pos[kth_actuator]);
+  //     SerialUSB.print(", ");
+  //     SerialUSB.print(desired_pos[kth_actuator]);
+  //     SerialUSB.print(", ");
+  //     SerialUSB.print(direction[kth_actuator]);
+  //   }
+  //   SerialUSB.println("");
+  // }
 }
 
 void stateButtonLight(PlatformState state, uint32_t time) {
@@ -274,55 +280,50 @@ void lcdDisplayState(PlatformState state) {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("State:");
-  
 
-  //spesifies where the current space should get printed 
-  lcd.setCursor(7,0);
+
+  //spesifies where the current space should get printed
+  lcd.setCursor(7, 0);
   lcd.print(state);
 
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   //If else loop to print the current state
-  if (state == 0){ 
+  if (state == 0) {
     //Prints IDLE and the symbol if the current state is 0
     lcd.print("IDLE       ");
     lcd.setCursor(14, 1);
     lcd.write(byte(3));
-  }
-  else if(state == 1){
+  } else if (state == 1) {
     lcd.print("SET TIME     ");
     lcd.setCursor(14, 1);
     lcd.write(byte(4));
-  }
-  else if(state == 2){
+  } else if (state == 2) {
     lcd.print("RUNNING        ");
     lcd.setCursor(14, 1);
     lcd.write(byte(5));
-  }
-  else if(state == 3){
+  } else if (state == 3) {
     lcd.print("REPOSITION   ");
     lcd.setCursor(14, 1);
     lcd.write(byte(2));
-  }
-  else if(state == 4){
+  } else if (state == 4) {
     lcd.print("RETURN HOME  ");
     lcd.setCursor(14, 1);
     lcd.write(byte(0));
-  }
-  else if(state == 5){
+  } else if (state == 5) {
     lcd.print("EMERGENCY   ");
     lcd.setCursor(14, 1);
     lcd.write(byte(1));
   }
 }
 
-int readAnalogueAvg(int pin) {
+long readAnalogueAvg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
-  int reads = 0; 
+  long reads = 0;
   for (int i = 0; i < ACTUATOR_MEASUREMENTS; i++) {
     reads += analogRead(pin);
   }
-  return (int)(reads / ACTUATOR_MEASUREMENTS);
+  return (long)(reads / ACTUATOR_MEASUREMENTS);
 }
 
 int manyReadDigital(int pin) {
@@ -334,17 +335,18 @@ int manyReadDigital(int pin) {
 }
 
 int16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
-  return constrain(map(readAnalogueAvg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
+  long read = readAnalogueAvg(actuator_pin);
+  return constrain(map(read, zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
 }
+
 void setup() {
   // For SerialUSB communication
-  // SerialUSB.begin(BAUD_RATE);
+  SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
 
   // -------- LCD DISPLAY SETUP -------- //
   lcd.init();
   //lcd.begin(16, 2);
-  //Serial.begin(9600);
   lcd.backlight();
   //The syboles gets created
   lcd.createChar(0, Heart);
@@ -353,7 +355,7 @@ void setup() {
   lcd.createChar(3, hourGlass);
   lcd.createChar(4, time_set);
   lcd.createChar(5, runningstate);
-  
+
   pinMode(BUTTON_LED_PIN, OUTPUT);
 
   // For the three position switch
@@ -383,13 +385,12 @@ void setup() {
   digitalWrite(ENABLE_ACTUATORS, LOW);
 
   // If no claibration is done, we assume that calibration is already done previously
-  if(CALIBRATE) {
+  if (CALIBRATE) {
     calibrate();
   }
 
   //delay(1000);
 }
-
 
 void loop() {
   // If the calibration runs and fails (e.g one of the actuators are not connected), the program will stop
@@ -407,7 +408,7 @@ void loop() {
     if (current_state == RUNNING) next_state = REPOSITION;
   }
 
-  if(manyReadDigital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
+  if (manyReadDigital(EMERGENCY_STOP_PIN) == BUTTON_MEASUREMENTS) {
     next_state = EMERGENCY;
   }
 
@@ -423,7 +424,7 @@ void loop() {
 
   time_read = millis();
 
-  if(ENABLE_BUTTON_LED) {
+  if (ENABLE_BUTTON_LED) {
     stateButtonLight(current_state, time_read);
   }
 
@@ -432,17 +433,16 @@ void loop() {
       break;
 
     case SET_TIME:
-      last_timestamp = time_read; 
+      last_timestamp = time_read;
       next_state = RUNNING;
       break;
 
     case RUNNING:
-      current_time = time_read - last_timestamp;
-
+      current_time = (time_read - last_timestamp) % period;
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        desired_pos[kth_actuator] = positionFunction((current_time % period), ACTUATOR_BIAS[kth_actuator]);
+        desired_pos[kth_actuator] = positionFunction(current_time, ACTUATOR_BIAS[kth_actuator]);
       }
-    
+
       // Moves actuators to desired position, calculating direction and speed for actuators
       moveToPos();
 
@@ -452,26 +452,25 @@ void loop() {
       actuator_count_reset = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        if(desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
+        if (desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
           desired_pos[kth_actuator] = constrain(desired_pos[kth_actuator] - GRADTIENT, MIN_POS, MAX_POS);
         }
       }
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         // Check if the desired position has been reached
-        if (current_pos[kth_actuator] <= positionFunction(0, ACTUATOR_BIAS[kth_actuator]) + POS_THRESHOLD ) {
+        if (current_pos[kth_actuator] <= positionFunction(0, ACTUATOR_BIAS[kth_actuator]) + POS_THRESHOLD) {
           actuator_count_reset++;
         }
       }
 
+      // Moves actuators to desired position, calculating direction and speed for actuators
+      moveToPos();
+
       if (actuator_count_reset == NUM_ACTUATORS) {
         // If all three actuators have reached their desired position, go to next state
         next_state = SET_TIME;
-      } else {
-        // Moves actuators to desired position, calculating direction and speed for actuators
-        moveToPos();
       }
-
 
       break;
 
@@ -479,7 +478,7 @@ void loop() {
       actuator_count_reset = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        if(desired_pos[kth_actuator] > 0) {
+        if (desired_pos[kth_actuator] > 0) {
           desired_pos[kth_actuator] = constrain(desired_pos[kth_actuator] - GRADTIENT, MIN_POS, MAX_POS);
         }
       }
@@ -490,12 +489,12 @@ void loop() {
         }
       }
 
+      // Moves actuators to desired position, calculating direction and speed for actuators
+      moveToPos();
+
       if (actuator_count_reset == NUM_ACTUATORS) {
         // If all three actuators have reached their desired position, go to next state
         next_state = IDLE;
-      } else {
-        // Moves actuators to desired position, calculating direction and speed for actuators
-        moveToPos();
       }
 
       break;
@@ -513,10 +512,6 @@ void loop() {
         next_state = RETURN_HOME;
       }
 
-      break;
-
-    default:
-      // Do nothing.
       break;
   }
 

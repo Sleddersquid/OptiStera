@@ -12,7 +12,7 @@
 #define GRADTIENT 2 // 0.01 // In binary, float point arithmatic
 
 #define ACTUATOR_MEASUREMENTS 255 // measurements to take
-#define BUTTON_MEASUREMENTS 10 // measurements to take
+#define BUTTON_MEASUREMENTS 30 // measurements to take
 
 #define BAUD_RATE 115200
 
