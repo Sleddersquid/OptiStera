@@ -110,10 +110,10 @@ uint16_t next_period = period;
 
 uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
-uint32_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
-uint32_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+int32_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+int32_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
 int32_t pos_diff[NUM_ACTUATORS];      // Ranges from -1023..1023
-uint16_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
+// uint16_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
 bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
 
 // Variables used only for calibration
@@ -199,14 +199,14 @@ void change_state() {
 }
 
 // l_k(t) with k = 1, 2, 3 and t in ms
-float positionFunction(int t, float bias) { 
+int32_t positionFunction(int t, float bias) { 
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
 void moveToPos() {
   // Get the current positon of all actuators and set dirrection based of the
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-    current_pos[kth_actuator] = map(readAnalogueAvg(ACTUATOR_POT_PINS[kth_actuator]), ZERO_POS[kth_actuator], END_POS[kth_actuator], MIN_POS, MAX_POS);
+    current_pos[kth_actuator] = readActuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
     pos_diff[kth_actuator] = desired_pos[kth_actuator] - current_pos[kth_actuator];
 
@@ -315,14 +315,14 @@ void lcdDisplayState(PlatformState state) {
   }
 }
 
-long readAnalogueAvg(int pin) {
+int readAnalogueAvg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
-  uint32_t reads = 0; 
+  float reads = 0; 
   for (int i = 0; i < ACTUATOR_MEASUREMENTS; i++) {
     reads += analogRead(pin);
   }
-  return (reads / ACTUATOR_MEASUREMENTS);
+  return (int)(reads / (float)ACTUATOR_MEASUREMENTS);
 }
 
 int manyReadDigital(int pin) {
@@ -458,7 +458,7 @@ void loop() {
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         // Check if the desired position has been reached
-        if (current_pos[kth_actuator] - positionFunction(0, ACTUATOR_BIAS[kth_actuator]) <= POS_THRESHOLD) {
+        if (current_pos[kth_actuator] <= positionFunction(0, ACTUATOR_BIAS[kth_actuator]) + POS_THRESHOLD ) {
           actuator_count_reset++;
         }
       }
