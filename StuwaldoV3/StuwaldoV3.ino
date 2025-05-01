@@ -1,24 +1,23 @@
+#include "variables.h"
 #include <math.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
-#include "variables.h"
 
 // How to control the actuators (motors), file organising and calibrate function are taken from,
 // https://github.com/progressiveautomations/Stewart-Platform/blob/master/arduino/platform/platform.ino
 
 // To do list
-// 1. Beutify it -- DONE
+// 1. Beutify ti -- DONE
 // 2. Shorten the list of global variables, which is all for now -- No need
 // 3. Add enable and diabling of H-bridge -- No
 // 4. Is it a concern that the lights light up when reset is done? -- No
 // 5. IMPORTANT: Add led light on the button -- DONE
-
-// SCL and SDA pins for I2C
+// 6. Soft reset/stop -- DONE, but works onyl for heave, not tested with bias of l_k(t)
 LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
 
-// making the symbols
-byte Heart[] = { // making a heart symbol
+//making the symbols for the print
+byte Heart[] = { //making a heart symbol
   B00000,
   B01010,
   B11111,
@@ -28,7 +27,7 @@ byte Heart[] = { // making a heart symbol
   B00000,
   B00000
 };
-byte Bell[] = { // bell symbol for emergency 
+byte Bell[] = { //bell symbol for emergency 
   B00100,
   B01110,
   B01010,
@@ -38,7 +37,7 @@ byte Bell[] = { // bell symbol for emergency
   B00000,
   B00100
 };
-byte circle[] = { // two arrows going in circle, symbolising repositioning
+byte circle[] = { //two arrows going in circle, symbolising repositioning
   B01111,
   B01001,
   B11101,
@@ -48,7 +47,7 @@ byte circle[] = { // two arrows going in circle, symbolising repositioning
   B10010,
   B11110,
 };
-byte hourGlass[] = { // For idle, a waiting signal
+byte hourGlass[] = { //For idle, a waiting signal
   B00000,
   B00000,
   B11111,
@@ -80,7 +79,6 @@ byte runningstate[] = {
 };
 
 uint32_t blink_interval = 1000, previousMillis, current_time;  // in ms
-
 bool ledState = 0;
 
 // Enum for different speeds for the actuator
@@ -101,21 +99,21 @@ enum PlatformState {
 };
 
 // When the program starts, the actuators go to fully retracted position and then goes to IDLE
-volatile PlatformState current_state = EMERGENCY; // Will be populated at iteration of loop. Assume EMERGENCY
+volatile PlatformState current_state = EMERGENCY; // Will be populated at iteration of loop
 PlatformState next_state = EMERGENCY;
 
 int actuator_count_reset = 0;
 
 // The period sets the speed for the actuators
-uint32_t period = MODERATE; // in ms
-uint32_t next_period = period; // in ms
+uint16_t period = MODERATE;
+uint16_t next_period = period;
 
-uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at state change between IDLE -> RUNNING
+uint32_t time_read, last_timestamp; // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
-uint16_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
-uint16_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
-int16_t pos_diff[NUM_ACTUATORS];      // Ranges from -1023..1023
-uint8_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
+uint32_t desired_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+uint32_t current_pos[NUM_ACTUATORS];  // Ranges from 0..1023
+int32_t pos_diff[NUM_ACTUATORS];      // Ranges from -1023..1023
+uint16_t pwm_value[NUM_ACTUATORS];     // Ranges from 0..255
 bool direction[NUM_ACTUATORS];        // 0 = RETRACT, 1 = EXTEND
 
 // Variables used only for calibration
@@ -125,7 +123,7 @@ bool calibration_valid = true;  // Will be set to false if calibration was not d
 
 uint32_t interrupt_time = 0;
 volatile uint32_t last_interrupt_time = 0;
-const uint8_t debounce_interval = 100;
+const uint8_t debounce_interval = 200;
 
 void calibrate() {
   // Extend all actuators
@@ -142,6 +140,7 @@ void calibrate() {
 
     // Check if the kth_actuators are powered (reading is valid)
     calibration_valid = (abs(end_readings[kth_actuator] - END_POS[kth_actuator]) < OFF_THRESHOLD);
+    //if (!calibration_valid) { break; }
   }
   // Retract all actuators
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
@@ -157,6 +156,7 @@ void calibrate() {
 
     // Check if the actuators are powered (reading is valid)
     calibration_valid = (abs(zero_readings[kth_actuator] - ZERO_POS[kth_actuator]) < OFF_THRESHOLD);
+    //if (!calibration_valid) { break; }
   }
 
   // IF CALIBRATION IS TO BE DONE MANUALY, uncomment this
@@ -183,7 +183,7 @@ void calibrate() {
   }
 }
 
-void changeState() {
+void change_state() {
   // If button is not HIGH in all measurements assume noise and don't trigger state change
   if (manyReadDigital(STATE_BUTTON_PIN) != BUTTON_MEASUREMENTS) return;
 
@@ -199,17 +199,18 @@ void changeState() {
 }
 
 // l_k(t) with k = 1, 2, 3 and t in ms
-float positionFunction(uint32_t t, float bias) { 
+float positionFunction(int t, float bias) { 
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
 void moveToPos() {
-  // Get the current positon of all actuators and set dirrection based of the position difference
+  // Get the current positon of all actuators and set dirrection based of the
   for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-    current_pos[kth_actuator] = readActuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
+    current_pos[kth_actuator] = map(readAnalogueAvg(ACTUATOR_POT_PINS[kth_actuator]), ZERO_POS[kth_actuator], END_POS[kth_actuator], MIN_POS, MAX_POS);
 
     pos_diff[kth_actuator] = desired_pos[kth_actuator] - current_pos[kth_actuator];
 
+    // Se nærmere på
     if (current_pos[kth_actuator] < desired_pos[kth_actuator]) {
       direction[kth_actuator] = EXTEND;
     } else {
@@ -229,18 +230,17 @@ void moveToPos() {
     }
   }
 
-  // for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
-  //   SerialUSB.print(" Actuator ");
-  //   SerialUSB.print(kth_actuator);
-  //   SerialUSB.print(": ");
-  //   SerialUSB.print(current_pos[kth_actuator]);
-  //   SerialUSB.print(", ");
-  //   SerialUSB.print(desired_pos[kth_actuator]);
-  //   SerialUSB.print(", ");
-  //   SerialUSB.print(direction[kth_actuator]);
-  // }
-
-  // SerialUSB.println("");
+  for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; ++kth_actuator) {
+    SerialUSB.print(" Actuator ");
+    SerialUSB.print(kth_actuator + 1);
+    SerialUSB.print(": ");
+    SerialUSB.print(current_pos[kth_actuator]);
+    SerialUSB.print(", ");
+    SerialUSB.print(desired_pos[kth_actuator]);
+    SerialUSB.print(", ");
+    SerialUSB.print(direction[kth_actuator]);
+  }
+  SerialUSB.println("");
 }
 
 void stateButtonLight(PlatformState state, uint32_t time) {
@@ -271,10 +271,11 @@ void stateButtonLight(PlatformState state, uint32_t time) {
 }
 
 void lcdDisplayState(PlatformState state) {
+  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("State:");
+  
 
-  // Serial.println(current_state);
   //spesifies where the current space should get printed 
   lcd.setCursor(7,0);
   lcd.print(state);
@@ -317,7 +318,7 @@ void lcdDisplayState(PlatformState state) {
 long readAnalogueAvg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
-  uint32_t reads = 0;
+  uint32_t reads = 0; 
   for (int i = 0; i < ACTUATOR_MEASUREMENTS; i++) {
     reads += analogRead(pin);
   }
@@ -331,14 +332,11 @@ int manyReadDigital(int pin) {
   }
   return reads;
 }
-
 uint16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
   return constrain(map(readAnalogueAvg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
-
 }
-
 void setup() {
-  // For SerialUSB communication (Native USB port, for debugging, final deployment is on the programming port). 
+  // For SerialUSB communication
   // SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
 
@@ -354,9 +352,7 @@ void setup() {
   lcd.createChar(3, hourGlass);
   lcd.createChar(4, time_set);
   lcd.createChar(5, runningstate);
-
-
-  // -------- BUTTON SETUP -------- //
+  
   pinMode(BUTTON_LED_PIN, OUTPUT);
 
   // For the three position switch
@@ -364,7 +360,7 @@ void setup() {
   pinMode(RIGTH_SWITCH_PIN, INPUT);
 
   pinMode(STATE_BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(STATE_BUTTON_PIN), changeState, RISING);
+  attachInterrupt(digitalPinToInterrupt(STATE_BUTTON_PIN), change_state, RISING);
 
   pinMode(EMERGENCY_STOP_PIN, INPUT);
 
@@ -389,6 +385,8 @@ void setup() {
   if(CALIBRATE) {
     calibrate();
   }
+
+  //delay(1000);
 }
 
 
@@ -412,18 +410,18 @@ void loop() {
     next_state = EMERGENCY;
   }
 
-  // LCD display. Creates a big delay, for each iteration. Optimal, each iteration should be 1ms (is 3ms with a lot of SerialUSB.print)
-  lcdDisplayState(current_state);
+  if (current_state != next_state) {
+    lcdDisplayState(next_state);
+  }
 
   // Change state
   current_state = next_state;
 
-  // SerialUSB.print("Current State: ");
-  // SerialUSB.println(current_state);
+  SerialUSB.print("Current State: ");
+  SerialUSB.println(current_state);
 
   time_read = millis();
 
-  // Takes little time to set digital pin output, therefor no current_state != next_state
   if(ENABLE_BUTTON_LED) {
     stateButtonLight(current_state, time_read);
   }
@@ -454,7 +452,7 @@ void loop() {
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if(desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
-          desired_pos[kth_actuator] = desired_pos[kth_actuator] - GRADTIENT;
+          desired_pos[kth_actuator] = constrain(desired_pos[kth_actuator] - GRADTIENT, MIN_POS, MAX_POS);
         }
       }
 
