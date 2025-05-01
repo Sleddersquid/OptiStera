@@ -125,7 +125,7 @@ bool calibration_valid = true;  // Will be set to false if calibration was not d
 
 uint32_t interrupt_time = 0;
 volatile uint32_t last_interrupt_time = 0;
-const uint8_t debounce_interval = 200;
+const uint8_t debounce_interval = 100;
 
 void calibrate() {
   // Extend all actuators
