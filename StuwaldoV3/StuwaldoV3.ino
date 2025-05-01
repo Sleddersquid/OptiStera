@@ -17,7 +17,7 @@
 LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
 
 //making the symbols for the print
-byte Heart[] = {  //making a heart symbol
+byte heart[] = {  //making a heart symbol
   B00000,
   B01010,
   B11111,
@@ -27,7 +27,7 @@ byte Heart[] = {  //making a heart symbol
   B00000,
   B00000
 };
-byte Bell[] = {  //bell symbol for emergency
+byte bell[] = {  //bell symbol for emergency
   B00100,
   B01110,
   B01010,
@@ -48,7 +48,7 @@ byte circle[] = {
   B10010,
   B11110,
 };
-byte hourGlass[] = {
+byte hour_glass[] = {
   //For idle, a waiting signal
   B00000,
   B00000,
@@ -349,10 +349,10 @@ void setup() {
   //lcd.begin(16, 2);
   lcd.backlight();
   //The syboles gets created
-  lcd.createChar(0, Heart);
-  lcd.createChar(1, Bell);
+  lcd.createChar(0, heart);
+  lcd.createChar(1, bell);
   lcd.createChar(2, circle);
-  lcd.createChar(3, hourGlass);
+  lcd.createChar(3, hour_glass);
   lcd.createChar(4, time_set);
   lcd.createChar(5, runningstate);
 
