@@ -318,11 +318,11 @@ void lcdDisplayState(PlatformState state) {
 int readAnalogueAvg(int pin) {
   // Will never be negative and biggest possible integer is (2^10 - 1)* 255 = 260'865
   // Therfore, minimum bits needed are ln((2^10 - 1)* 255)/ln(2) = celi(17.99) = 18 bits
-  float reads = 0; 
+  int reads = 0; 
   for (int i = 0; i < ACTUATOR_MEASUREMENTS; i++) {
     reads += analogRead(pin);
   }
-  return (int)(reads / (float)ACTUATOR_MEASUREMENTS);
+  return (int)(reads / ACTUATOR_MEASUREMENTS);
 }
 
 int manyReadDigital(int pin) {
@@ -332,7 +332,8 @@ int manyReadDigital(int pin) {
   }
   return reads;
 }
-uint16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
+
+int16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos) {
   return constrain(map(readAnalogueAvg(actuator_pin), zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
 }
 void setup() {
