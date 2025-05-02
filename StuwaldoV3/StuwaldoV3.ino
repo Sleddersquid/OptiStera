@@ -110,7 +110,7 @@ int actuator_count_reset = 0;
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
 uint16_t next_period = period;
-int enable_switch_change;
+bool enable_switch_change = false;
 
 uint32_t time_read, last_timestamp;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
@@ -399,7 +399,7 @@ void loop() {
   // 10 - SLOW mode      - Switch is at the left most position
   // 01 - FAST mode      - Switch is at the right most position
   // 00 - Moderate mode  - Switch is at the middle position
-  if(enable_switch_change > 300) {
+  if(enable_switch_change) {
     if (manyReadDigital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
     else if (manyReadDigital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
     else next_period = MODERATE;
@@ -414,9 +414,9 @@ void loop() {
     next_state = EMERGENCY;
   }
 
-  // if (ENABLE_LCD_DISPLAY && (current_state != next_state)) {
-  //   lcdDisplayState(next_state);
-  // }
+  if (ENABLE_LCD_DISPLAY && (current_state != next_state)) {
+    lcdDisplayState(next_state);
+  }
 
   // Change state
   current_state = next_state;
@@ -452,15 +452,16 @@ void loop() {
       // Moves actuators to desired position, calculating direction and speed for actuators
       moveToPos();
 
-      if(enable_switch_change <= 300) {
-        enable_switch_change++;
+      if(time_read > 1000) {
+        enable_switch_change = true;
+      } else {
+        enable_switch_change = false;
       }
 
       break;
 
     case REPOSITION:
       actuator_count_reset = 0;
-      enable_switch_change = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if (desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
