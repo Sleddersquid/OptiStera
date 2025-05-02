@@ -18,4 +18,5 @@ The final code for the control of parallel manipulator is under the project Stuw
 | `StuwaldoV3`              | Final version of the paltform, soft start/stop, no big moment of inertia              |
 | `Testing_buttons`         | Testing for buttons and three position switch, with states                            |
 | `Testing_I2C_Display`     | Testing for the LCD 1602A LCD display with I2C backbone                               |
+| `Testing_led_button`      | Testing for the led button on the Arduino Due with MOSFET                             |
 | `read_serial.py`          | Reads from serial port and adds lines to csv file, used for plotting data in MATLAB   |
