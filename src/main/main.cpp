@@ -56,17 +56,18 @@ cv::Point calculateCenter(const std::vector<cv::Point> &contour)
 
 std::thread temp_thread;
 
-bool get_temp_running = true;
-bool camera_running = true;
+std::atomic<bool> get_temp_running = true;
+std::atomic<bool> camera_running = true;
 
 void signalHandler(int signum) {
-    bool get_temp_running = false;
-    bool camera_running = false;
+    get_temp_running = false;
+    camera_running = false;
 }
 
 int main()
 {
     signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
     
     cv::Point new_center(0, 0);
     // cv::Point old_center(0, 0);
@@ -96,6 +97,8 @@ int main()
     opcua::NodeId cameraNodeXId = {1, 1001};
     opcua::NodeId cameraNodeYId = {1, 1002};
     opcua::NodeId cameraNodeRadiusId = {1, 1003};
+    opcua::NodeId enableObjectRecognitionId = {1, 1004};
+    opcua::NodeId statusObjectRecognitionId = {1, 1005};
 
     opcua::Result<opcua::NodeId> parentNode =
         opcua::services::addVariable(
@@ -117,7 +120,7 @@ int main()
             cameraNodeXId,
             "CameraX",
             opcua::VariableAttributes{}
-                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ)
                 .setDataType<int>()
                 .setValue(opcua::Variant(new_center.x)),
             opcua::VariableTypeId::BaseDataVariableType,
@@ -130,7 +133,7 @@ int main()
             cameraNodeYId,
             "CameraY",
             opcua::VariableAttributes{}
-                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ)
                 .setDataType<int>()
                 .setValue(opcua::Variant(new_center.y)),
             opcua::VariableTypeId::BaseDataVariableType,
@@ -143,9 +146,35 @@ int main()
             cameraNodeRadiusId,
             "CameraRadius",
             opcua::VariableAttributes{}
-                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ)
                 .setDataType<int>()
                 .setValue(opcua::Variant((int)radius)),
+            opcua::VariableTypeId::BaseDataVariableType,
+            opcua::ReferenceTypeId::HasComponent);
+
+    opcua::Result<opcua::NodeId> enableObjectNode =
+        opcua::services::addVariable(
+            server,
+            objectParentNodeId,
+            enableObjectRecognitionId,
+            "enableObjectRecognitionId",
+            opcua::VariableAttributes{}
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setDataType<bool>()
+                .setValue(opcua::Variant(false)),
+            opcua::VariableTypeId::BaseDataVariableType,
+            opcua::ReferenceTypeId::HasComponent);
+
+    opcua::Result<opcua::NodeId> statusObjectNode =
+        opcua::services::addVariable(
+            server,
+            objectParentNodeId,
+            statusObjectRecognitionId,
+            "statusObjectRecognitionId",
+            opcua::VariableAttributes{}
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ)
+                .setDataType<bool>()
+                .setValue(opcua::Variant(false)),
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
@@ -153,17 +182,17 @@ int main()
     temp_thread = std::thread([&server]() {
         float temp = 0.0f;
         std::string file_content;
-        opcua::NodeId tempMeasurementNodeId = {1, 1004};
+        opcua::NodeId tempMeasurementNodeId = {1, 1006};
             
         // Server temp node
         opcua::Result<opcua::NodeId> Node_RaspberryPi_temp =
         opcua::services::addVariable(
             server,
-            opcua::ObjectId::Server, // Server node id
+            opcua::VariableId::Server_ServerStatus,
             tempMeasurementNodeId,
             "RaspberryPiTemperature",
             opcua::VariableAttributes{}
-                .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
+                .setAccessLevel(UA_ACCESSLEVELMASK_READ)
                 .setDataType<float>()
                 .setValue(opcua::Variant(0.0f)),
             opcua::VariableTypeId::BaseDataVariableType,
@@ -273,14 +302,26 @@ int main()
     int frame_count = 0;
     float fps = -1;
     // std::vector<float> fps_counter_vec;
+
+    opcua::Result<opcua::DataValue> datafromNode;
     
     bool enable_print = false;
-    
+
     while (camera_running)
     {
+        datafromNode = opcua::services::readDataValue(server, enableObjectRecognitionId); 
+        if(datafromNode.value().value().to<bool>() == false){
+            // std::cout << "Object recognition disabled" << std::endl;
+            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(false)));
+            server.runIterate();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1/50 * 1000)); // 20Hz
+            continue;
+        }
+
         cv::Mat image;
         if (!cam.getVideoFrame(image, 1000))
         {
+            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(false)));
             std::cerr << "Timeout error" << std::endl;
         }
         else
@@ -460,40 +501,40 @@ int main()
             // cv::imshow("Video", image);
 
             // mask is a black and white image from the InRange function
-
             opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kalmanBall.x)));
             opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(kalmanBall.y)));
             opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant((int)radius)));
-
+            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(true)));
+            
             // auto end = std::chrono::high_resolution_clock::now();
 
             // elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-            server.runIterate();
             // delay_server_iterate = server.runIterate();
             // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
-
+            
             // To save images.
             // if (cv::waitKey(1) == 'q' && !first_save) {
-            //     cv::imwrite("pre-mask.jpg", pre_mask);
-            //     cv::imwrite("post-mask.jpg", mask);
-            //     cv::imwrite("image.jpg", image);
-            //     first_save = true;
-            //     std::cout << "Images saved" << std::endl;
-            // }
-
-            // quit on q button
-            iFrameNum++;
-
-            if (cv::waitKey(1) == 'q')
-            {
-                break;
+                //     cv::imwrite("pre-mask.jpg", pre_mask);
+                //     cv::imwrite("post-mask.jpg", mask);
+                //     cv::imwrite("image.jpg", image);
+                //     first_save = true;
+                //     std::cout << "Images saved" << std::endl;
+                // }
+                
+                // quit on q button
+                iFrameNum++;
+                
+                if (cv::waitKey(1) == 'q')
+                {
+                    break;
+                }
             }
+            server.runIterate();
         }
-    }
-
-    // for (auto fps : fps_counter_vec) {
-    //     std::cout << "FPS: " << fps << std::endl;
+        
+        // for (auto fps : fps_counter_vec) {
+            //     std::cout << "FPS: " << fps << std::endl;
     // }
 
     // std::cout << "Average FPS: " << std::accumulate(fps_counter_vec.begin(), fps_counter_vec.end(), 0.0) / fps_counter_vec.size() << std::endl;
