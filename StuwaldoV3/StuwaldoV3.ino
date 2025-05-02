@@ -110,13 +110,14 @@ int actuator_count_reset = 0;
 // The period sets the speed for the actuators
 uint16_t period = MODERATE;
 uint16_t next_period = period;
+int enable_switch_change;
 
-uint32_t time_read, last_timestamp, current_time;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
+uint32_t time_read, last_timestamp;  // the time to be read in ms, and the last read time at first iteration of IDLE -> RUNNING
 
 int32_t desired_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
 int32_t current_pos[NUM_ACTUATORS] = { 0, 0, 0 };  // Ranges from 0..1023
 int32_t pos_diff[NUM_ACTUATORS] = { 0, 0, 0 };     // Ranges from -1023..1023
-int8_t pwm_value[NUM_ACTUATORS] = { 0, 0, 0 };
+int32_t pwm_value[NUM_ACTUATORS] = { 0, 0, 0 };
 bool direction[NUM_ACTUATORS] = { 0, 0, 0 };         // 0 = RETRACT, 1 = EXTEND
 
 // Variables used only for calibration
@@ -203,6 +204,7 @@ void change_state() {
 
 // l_k(t) with k = 1, 2, 3 and t in ms
 int32_t positionFunction(int t, float bias) {
+  if (t == 0) return VERTICAL_SHIFT - AMPLUTIDE;
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
@@ -245,8 +247,7 @@ void moveToPos() {
   //     SerialUSB.print(", ");
   //     SerialUSB.print(direction[kth_actuator]);
   //   }
-  //   SerialUSB.println("");
-  // }
+  // SerialUSB.println("");
 }
 
 void stateButtonLight(PlatformState state, uint32_t time) {
@@ -280,7 +281,6 @@ void lcdDisplayState(PlatformState state) {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("State:");
-
 
   //spesifies where the current space should get printed
   lcd.setCursor(7, 0);
@@ -399,9 +399,11 @@ void loop() {
   // 10 - SLOW mode      - Switch is at the left most position
   // 01 - FAST mode      - Switch is at the right most position
   // 00 - Moderate mode  - Switch is at the middle position
-  if (manyReadDigital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
-  else if (manyReadDigital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
-  else next_period = MODERATE;
+  if(enable_switch_change > 300) {
+    if (manyReadDigital(LEFT_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = SLOW;
+    else if (manyReadDigital(RIGTH_SWITCH_PIN) == BUTTON_MEASUREMENTS) next_period = FAST;
+    else next_period = MODERATE;
+  }
 
   if (period != next_period) {
     period = next_period;
@@ -412,15 +414,18 @@ void loop() {
     next_state = EMERGENCY;
   }
 
-  if (ENABLE_LCD_DISPLAY && (current_state != next_state)) {
-    lcdDisplayState(next_state);
-  }
+  // if (ENABLE_LCD_DISPLAY && (current_state != next_state)) {
+  //   lcdDisplayState(next_state);
+  // }
 
   // Change state
   current_state = next_state;
 
-  SerialUSB.print("Current State: ");
-  SerialUSB.println(current_state);
+  // SerialUSB.print("Current State: ");
+  // SerialUSB.println(current_state);
+
+  SerialUSB.print("BRUH: ");
+  SerialUSB.println(enable_switch_change);
 
   time_read = millis();
 
@@ -438,18 +443,24 @@ void loop() {
       break;
 
     case RUNNING:
-      current_time = (time_read - last_timestamp) % period;
+      time_read = time_read - last_timestamp;
+
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
-        desired_pos[kth_actuator] = positionFunction(current_time, ACTUATOR_BIAS[kth_actuator]);
+        desired_pos[kth_actuator] = positionFunction(time_read, ACTUATOR_BIAS[kth_actuator]);
       }
 
       // Moves actuators to desired position, calculating direction and speed for actuators
       moveToPos();
 
+      if(enable_switch_change <= 300) {
+        enable_switch_change++;
+      }
+
       break;
 
     case REPOSITION:
       actuator_count_reset = 0;
+      enable_switch_change = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if (desired_pos[kth_actuator] > positionFunction(0, ACTUATOR_BIAS[kth_actuator])) {
@@ -476,6 +487,7 @@ void loop() {
 
     case RETURN_HOME:
       actuator_count_reset = 0;
+      enable_switch_change = 0;
 
       for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++) {
         if (desired_pos[kth_actuator] > 0) {
@@ -512,6 +524,9 @@ void loop() {
         next_state = RETURN_HOME;
       }
 
+      break;
+    default:
+      SerialUSB.println("The fuck");
       break;
   }
 
