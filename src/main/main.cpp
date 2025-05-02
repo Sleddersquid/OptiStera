@@ -29,7 +29,7 @@
 #define CAMERA_FRAMERATE 100 // If fps higher than what the thread can handle, it will just run lower fps.
 #define FPS_SAMPLES 100
 
-#define TEMP_FREQUENCY 1000 // in ms
+#define TEMP_UPDATE 10 // in s
 
 
 /**
@@ -99,6 +99,7 @@ int main()
     opcua::NodeId cameraNodeRadiusId = {1, 1003};
     opcua::NodeId enableObjectRecognitionId = {1, 1004};
     opcua::NodeId statusObjectRecognitionId = {1, 1005};
+    bool object_recognition_enabled = false;
 
     opcua::Result<opcua::NodeId> parentNode =
         opcua::services::addVariable(
@@ -152,12 +153,13 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
+    // Enable object recognition from the RCU
     opcua::Result<opcua::NodeId> enableObjectNode =
         opcua::services::addVariable(
             server,
             objectParentNodeId,
             enableObjectRecognitionId,
-            "enableObjectRecognitionId",
+            "enableObjectRecognition",
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE)
                 .setDataType<bool>()
@@ -165,12 +167,13 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
+    // Feedback of status of object recognition to the RCU
     opcua::Result<opcua::NodeId> statusObjectNode =
         opcua::services::addVariable(
             server,
             objectParentNodeId,
             statusObjectRecognitionId,
-            "statusObjectRecognitionId",
+            "statusObjectRecognition",
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ)
                 .setDataType<bool>()
@@ -200,7 +203,7 @@ int main()
         
         while (get_temp_running) {
             // Sleep here because of continue
-            std::this_thread::sleep_for(std::chrono::milliseconds(TEMP_FREQUENCY));
+            std::this_thread::sleep_for(std::chrono::seconds(10));
 
             // Open file 
             std::ifstream temp_file("/sys/class/thermal/thermal_zone0/temp");
@@ -294,7 +297,7 @@ int main()
     
     int iFrameNum = 0;
     
-    cv::Point kalmanBall;
+    cv::Point kallman_ball(0, 0);
     
     kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
     
@@ -303,25 +306,32 @@ int main()
     float fps = -1;
     // std::vector<float> fps_counter_vec;
 
-    opcua::Result<opcua::DataValue> datafromNode;
+    
     
     bool enable_print = false;
 
     while (camera_running)
     {
-        datafromNode = opcua::services::readDataValue(server, enableObjectRecognitionId); 
-        if(datafromNode.value().value().to<bool>() == false){
+        opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kallman_ball.x)));
+        opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(kallman_ball.y)));
+        opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant((int)radius)));
+
+        opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(object_recognition_enabled)));
+        
+        object_recognition_enabled = opcua::services::readDataValue(server, enableObjectRecognitionId).value().value().to<bool>();
+        server.runIterate();
+        if(object_recognition_enabled == false)
+        {
             // std::cout << "Object recognition disabled" << std::endl;
-            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(false)));
-            server.runIterate();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1/50 * 1000)); // 20Hz
+            kallman_ball = cv::Point(0, 0);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // 20Hz
             continue;
         }
 
         cv::Mat image;
         if (!cam.getVideoFrame(image, 1000))
         {
-            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(false)));
+            object_recognition_enabled = false;
             std::cerr << "Timeout error" << std::endl;
         }
         else
@@ -400,8 +410,8 @@ int main()
 
             // std::cout << "Ball.x =  " << enclosingCenter.x << std::endl
             //      << "Ball.y =  " << enclosingCenter.y << std::endl;
-            // std::cout << "KBall.x = " << kalmanBall.x << std::endl
-            //      << "KBall.y = " << kalmanBall.y << std::endl;
+            // std::cout << "KBall.x = " << kallman_ball.x << std::endl
+            //      << "KBall.y = " << kallman_ball.y << std::endl;
 
             // if (radius < 39.0f) {
             //     enclosingCenter = cv::Point(0, 0);
@@ -420,12 +430,12 @@ int main()
             // std::cout << "enclosing centre.x: " << enclosingCenter.x << " enclosing centre.y: " << enclosingCenter.y << std::endl;
             // std::cout << "New center.x: " << new_center.x << " New center.y: " << new_center.y << std::endl;
 
-            kalmanBall = kalmanKF.Predict((cv::Point2i)enclosingCenter);
+            kallman_ball = kalmanKF.Predict((cv::Point2i)enclosingCenter);
 
-            // Point p1 = Point(kalmanBall.x-10, kalmanBall.y-10)ø; //Test 3.3
-            // // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); //Test 3.3
-            // Point p1 = Point(kalmanBall.x - 10, kalmanBall.y - 10); // Test 3.3
-            // Point p2 = Point(kalmanBall.x + 10, kalmanBall.y + 10); // Test 3.3
+            // Point p1 = Point(kallman_ball.x-10, kallman_ball.y-10)ø; //Test 3.3
+            // // Point p2 = Point(kallman_ball.x + 10, kallman_ball.y + 10); //Test 3.3
+            // Point p1 = Point(kallman_ball.x - 10, kallman_ball.y - 10); // Test 3.3
+            // Point p2 = Point(kallman_ball.x + 10, kallman_ball.y + 10); // Test 3.3
 
             // // std::cout << kalmanKF.getStatus() << std::endl;
 
@@ -501,10 +511,9 @@ int main()
             // cv::imshow("Video", image);
 
             // mask is a black and white image from the InRange function
-            opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kalmanBall.x)));
-            opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(kalmanBall.y)));
-            opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant((int)radius)));
-            opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(true)));
+            // It is not until the server runs iterate that the values will be updated
+
+            object_recognition_enabled = true;
             
             // auto end = std::chrono::high_resolution_clock::now();
 
@@ -530,7 +539,6 @@ int main()
                     break;
                 }
             }
-            server.runIterate();
         }
         
         // for (auto fps : fps_counter_vec) {
