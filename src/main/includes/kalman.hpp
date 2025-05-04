@@ -46,7 +46,9 @@ namespace kalmantracking {
 		kalman(int stateTransitionSize, int measurementSize, cv::Mat A, cv::Mat H, cv::Mat P, cv::Mat Q, cv::Mat R, bool bFullDebudOn);
 		kalman(unsigned int iMode, bool bFullDebugOn);
 
-		void Restart();
+		void Restart() {
+			_k.init(_stateTransitionSize, _measurementsSize, _controlSize, _type);
+		};
 
 		void SetTransitionMatrix(cv::Mat A);
 		void SetMeasurementMatrix(cv::Mat H);

@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     std::vector<std::string> class_list = load_class_list();
 
     cv::Mat frame;
-    cv::VideoCapture capture("sample.mp4");
+    cv::VideoCapture capture("benchmark_video.mp4");
     if (!capture.isOpened())
     {
         std::cerr << "Error opening video file\n";
@@ -194,17 +194,17 @@ int main(int argc, char **argv)
             fps_label << "FPS: " << fps;
             std::string fps_label_str = fps_label.str();
 
-            cv::putText(frame, fps_label_str.c_str(), cv::Point(10, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+            std::cout << fps_label_str << std::endl;
         }
 
-        cv::imshow("output", frame);
+        // cv::imshow("output", frame);
 
-        if (cv::waitKey(1) != -1)
-        {
-            capture.release();
-            std::cout << "finished by user\n";
-            break;
-        }
+        // if (cv::waitKey(1) != -1)
+        // {
+        //     capture.release();
+        //     std::cout << "finished by user\n";
+        //     break;
+        // }
     }
 
     std::cout << "Total frames: " << total_frames << "\n";

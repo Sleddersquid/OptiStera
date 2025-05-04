@@ -31,13 +31,14 @@
 
 #define TEMP_UPDATE 10 // in s
 
+// #define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+
 
 /**
  * @brief Function to calculate the center of a contour using moments
  * @param contour - The contour to calculate the center of
  * @return The center of the contour as cv::Point
  */
-
 cv::Point calculateCenter(const std::vector<cv::Point> &contour)
 {
     cv::Moments M = cv::moments(contour);
@@ -48,6 +49,12 @@ cv::Point calculateCenter(const std::vector<cv::Point> &contour)
         return cv::Point((int)(M.m10 / M.m00), (int)(M.m01 / M.m00));
     }
     return cv::Point(0, 0); // If no center is found, return (-1, -1)
+}
+
+// From Wiring_constants.h
+template<typename T>
+T constrain(T p, T low, T high) {
+    return ((p) < (low) ? (low) : ((p) > (high) ? (high) : (p)));
 }
 
 // Must be global for signal handler
@@ -91,6 +98,7 @@ int main()
     config->publishingIntervalLimits = publishingIntervalLimits_custom;
 
     opcua::Server server(std::move(config));
+    uint16_t server_delay_ms = 20;
 
     // node ids = {namespace, id}
     opcua::NodeId objectParentNodeId = {1, 1000};
@@ -148,8 +156,8 @@ int main()
             "CameraRadius",
             opcua::VariableAttributes{}
                 .setAccessLevel(UA_ACCESSLEVELMASK_READ)
-                .setDataType<int>()
-                .setValue(opcua::Variant((int)radius)),
+                .setDataType<float>()
+                .setValue(opcua::Variant(radius)),
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
@@ -200,15 +208,27 @@ int main()
                 .setValue(opcua::Variant(0.0f)),
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
+
+        auto last_read = std::chrono::high_resolution_clock::now();
+        int32_t debounce_interval = TEMP_UPDATE * 1000; // in ms
         
         while (get_temp_running) {
             // Sleep here because of continue
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+            // std::this_thread::sleep_for(std::chrono::seconds(10));
+            
+            auto now = std::chrono::high_resolution_clock::now();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_read).count() > debounce_interval){
+                last_read = now;
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                continue;
+            }
 
-            // Open file 
+            // Open file
             std::ifstream temp_file("/sys/class/thermal/thermal_zone0/temp");
-            // if file not oppened 
+            // if file not oppened
             if (!temp_file.is_open()) {
+                std::cerr << "Error opening file" << std::endl;
                 continue;
             }
 
@@ -225,7 +245,6 @@ int main()
             // std::cout << "tamp: " << temp << std::endl;
         }
     });
-
 
 
     // -------------------------- OpenCV -------------------------- //
@@ -296,7 +315,7 @@ int main()
     int iTestsOffset = 20;  // Test 3.1 and 3.3
     
     int iFrameNum = 0;
-    
+    cv::Point2f enclosingCenter;
     cv::Point kallman_ball(0, 0);
     
     kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
@@ -305,8 +324,6 @@ int main()
     int frame_count = 0;
     float fps = -1;
     // std::vector<float> fps_counter_vec;
-
-    
     
     bool enable_print = false;
 
@@ -314,17 +331,21 @@ int main()
     {
         opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kallman_ball.x)));
         opcua::services::writeDataValue(server, cameraNodeYId, opcua::DataValue(opcua::Variant(kallman_ball.y)));
-        opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant((int)radius)));
+        opcua::services::writeDataValue(server, cameraNodeRadiusId, opcua::DataValue(opcua::Variant(radius)));
 
         opcua::services::writeDataValue(server, statusObjectRecognitionId, opcua::DataValue(opcua::Variant(object_recognition_enabled)));
         
         object_recognition_enabled = opcua::services::readDataValue(server, enableObjectRecognitionId).value().value().to<bool>();
-        server.runIterate();
+        server_delay_ms = server.runIterate();
+
         if(object_recognition_enabled == false)
         {
             // std::cout << "Object recognition disabled" << std::endl;
-            kallman_ball = cv::Point(0, 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // 20Hz
+            // enclosingCenter = cv::Point(-1, -1);
+            kallman_ball = cv::Point(-1, -1);
+            radius = -1.0;
+            // kalmanKF.Restart();
+            std::this_thread::sleep_for(std::chrono::milliseconds(server_delay_ms));
             continue;
         }
 
@@ -336,15 +357,14 @@ int main()
         }
         else
         {
-            if (image.empty())
-            {
+            if (image.empty()) {
                 std::cerr << "Image is empty" << std::endl;
                 continue;
             }
 
-            frame_count++;
+            object_recognition_enabled = true;
 
-            cv::Point2f enclosingCenter;
+            frame_count++;
 
             cv::cvtColor(image, HSV, cv::COLOR_BGR2HSV);
 
@@ -512,8 +532,6 @@ int main()
 
             // mask is a black and white image from the InRange function
             // It is not until the server runs iterate that the values will be updated
-
-            object_recognition_enabled = true;
             
             // auto end = std::chrono::high_resolution_clock::now();
 
@@ -521,6 +539,9 @@ int main()
 
             // delay_server_iterate = server.runIterate();
             // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
+
+            kallman_ball.x = constrain(kallman_ball.x, 0, CAMERA_WIDTH);
+            kallman_ball.y = constrain(kallman_ball.y, 0, CAMERA_HEIGHT);
             
             // To save images.
             // if (cv::waitKey(1) == 'q' && !first_save) {

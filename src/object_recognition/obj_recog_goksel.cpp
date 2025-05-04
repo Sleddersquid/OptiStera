@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     std::vector<std::string> class_list = load_class_list();
 
     // Opens a video file for processing.
-    lccv::PiCamera cam(1);
+    lccv::PiCamera cam(0);
 
     // Was (0, 120, 120) and (10, 255, 255).
     // Lightings conditions such as sunlight might detect hands and face
@@ -237,22 +237,23 @@ int main(int argc, char **argv)
                 fps_label << "FPS: " << fps;
                 std::string fps_label_str = fps_label.str();
 
-                cv::putText(frame, fps_label_str.c_str(), cv::Point(10, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+                std::cout << fps_label_str << std::endl;
+                // cv::putText(frame, fps_label_str.c_str(), cv::Point(10, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
             }
 
-            // Resize the frame with it's new shape as it's original ratio
-            int targetHeight = static_cast<int>(frame.rows * static_cast<float>(targetWidth) / frame.cols);
-            cv::Size newSize(targetWidth, targetHeight);
-            cv::Mat resized_frame;
-            cv::resize(frame, resized_frame, newSize);
+            // // Resize the frame with it's new shape as it's original ratio
+            // int targetHeight = static_cast<int>(frame.rows * static_cast<float>(targetWidth) / frame.cols);
+            // cv::Size newSize(targetWidth, targetHeight);
+            // cv::Mat resized_frame;
+            // cv::resize(frame, resized_frame, newSize);
 
-            cv::imshow("output", resized_frame);
+            // cv::imshow("output", resized_frame);
 
-            int key = cv::waitKey(1);
-            if (key == 113) // ESC to exit
-            {
-                break;
-            }
+            // int key = cv::waitKey(1);
+            // if (key == 113) // ESC to exit
+            // {
+            //     break;
+            // }
         }
     }
 
