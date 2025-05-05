@@ -33,6 +33,7 @@
   LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
 #endif
 
+///Creating the symbols for the display
 /// Heart symbol for #RETURN_HOME state
 byte heart[]= 
 {
@@ -407,16 +408,18 @@ void stateButtonLight(PlatformState state, uint32_t time)
 */
 void lcdDisplayState(PlatformState state)
 {
+  ///Clearing the LCD display to avoid mix up with the different displays
   lcd.clear();
+  /// Prints the State: first, since this is stationary 
   lcd.setCursor(0, 0);
   lcd.print("State:");
 
-  // spesifies where the current space should get printed
+  /// spesifies where the current state should get printed
   lcd.setCursor(7, 0);
   lcd.print(state);
 
   lcd.setCursor(0, 1);
-  // If else loop to print the current state
+  /// If else loop to print the current state
   if (state == 0)
   {
     // Prints IDLE and the symbol if the current state is 0
@@ -518,10 +521,9 @@ void setup()
   if(ENABLE_LCD_DISPLAY) {
     /// Start the LCD display
     lcd.init();
-    // lcd.begin(16, 2);
     /// Enable the backlight
     lcd.backlight();
-    // The syboles gets created
+    //create the symbols
     lcd.createChar(0, heart);
     lcd.createChar(1, bell);
     lcd.createChar(2, circle);
@@ -600,7 +602,7 @@ void loop()
   {
     next_state = EMERGENCY;
   }
-
+  ///Checks if state has changed, if so it will go to the next state
   if (ENABLE_LCD_DISPLAY && (current_state != next_state))
   {
     lcdDisplayState(next_state);
