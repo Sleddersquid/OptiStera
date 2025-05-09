@@ -1,7 +1,7 @@
 /**
  * @file StuwaldoV3/variables.h
  * @author OptiStera 
- * @brief Actuator configuration, math constants and LCD display variables.
+ * @brief Actuator configuration, math constants and LCD display variables. Configuration is enabled/disabled here. Read before starting program for the first time
 */
 #pragma once
 
@@ -14,9 +14,9 @@
 #define PI 3.1415926535897932384626433832795
 
 /// Configuration constant for \f$ l_k(t)\f$. Amplitude \f$(A)\f$ for the cosine function.
-#define AMPLUTIDE 400
+#define AMPLUTIDE 380
 /// Configuration constant for \f$ l_k(t)\f$. Vertical shift \f$(C)\f$ for cosine function.
-#define VERTICAL_SHIFT 511.5
+#define VERTICAL_SHIFT 420
 
 /// The speed of the actuators when in state #REPOSITION and #RETURN_HOME, to not induce big moment of inertia.
 #define GRADTIENT 2
@@ -46,14 +46,14 @@
 
 /** @brief If calibration should be performed manually or automatically.
  * - Automatically = 0: Program start with calibrated values
- * - Manual = 1: Serial Monitor. Program stops after calibration. 
+ * - Manual = 1: Serial Monitor. Program will stop even if calibration is not performed. 
 */
 #define MANUAL_CALIBRATION 0
 
 /// Used to check if the actuator is powered or not. If the actuator is not powered, then the readings sould exceed this value. 
 #define OFF_THRESHOLD 500
 /// Readings after calibration, when the actuators are at neutral position
-int16_t ZERO_POS[NUM_ACTUATORS]      = {45, 47, 43};
+int16_t ZERO_POS[NUM_ACTUATORS]      = {48, 47, 43};
 /// Readings after calibration, when the actuators are fully extended
 int16_t END_POS[NUM_ACTUATORS]       = {671, 675, 669};
 
@@ -88,12 +88,12 @@ const float ACTUATOR_BIAS[NUM_ACTUATORS] = {ACTUATOR_BIAS_1, ACTUATOR_BIAS_2, AC
 #define MAX_POS 1023
 
 /// Min speed for the actuators
-#define MIN_PWM 60
+#define MIN_PWM 80
 /// Max speed for the actuators
 #define MAX_PWM 255
 
 /// The margin of error to accept in position for the actuators
-#define POS_THRESHOLD 4
+#define POS_THRESHOLD 8
 
 /// Array for the actuators direction pins
 const uint8_t ACTUATOR_DIR_PINS[NUM_ACTUATORS] = {ACTUATOR_DIR_PIN_1, ACTUATOR_DIR_PIN_2, ACTUATOR_DIR_PIN_3};

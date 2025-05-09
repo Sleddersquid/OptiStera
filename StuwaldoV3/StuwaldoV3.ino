@@ -15,6 +15,7 @@
  * @todo Implement a better soft reset/stop functionality for \f$ B_k\neq 0 \f$.
  * @todo Find original source of why actuators become unresponsive when the three position switch is turned too many times within a small timeframe. 
  * @todo Instead of #IDLE \f$ \to \f$ #RUNNING, there should be a middle state to home the actuators. #RETURN_HOME could be as a middle state, where the actuators align themselves with \f$ l_k(0) \f$ and then start (#RUNNING state).
+ * @todo Caluclate the gradient based on a speed = distance/time, so that the actautors all reach the bottom at the same tim. 
  * 
  * @test Test actuators with \f$ B_k\neq 0 \f$ and how they behave in #REPOSITION and #RETURN_HOME state.
  *
@@ -33,7 +34,7 @@
   LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
 #endif
 
-///Creating the symbols for the display
+/// Creating the symbols for the display
 /// Heart symbol for #RETURN_HOME state
 byte heart[]= 
 {
@@ -152,15 +153,16 @@ enum PlatformState
   REPOSITION,  
   /// For stopping the platform completely (move actuators to neutral position), and go back to IDLE state.
   RETURN_HOME, 
-  /// For when the emergency button has been pressed, and the H-bridge loses power.
+  /// For when the emergency button has been pressed, and the H-bridge loses power. The speed for the actuators are set to 0.
   EMERGENCY    
 };
 
 /// When the program starts assume emergency. If not emergency, the actuators go to fully neutral position and is then ready to start (in IDLE state).
 /// Will be populated at first iteration of loop() by #next_state.
-volatile PlatformState current_state = EMERGENCY;
+volatile PlatformState current_state = RETURN_HOME;
 /// Controls the next state. Is controlled by the three position switch, button and emergency.
 volatile PlatformState next_state = EMERGENCY;
+/// Locks the state change for the button, when the LCD display is updating.
 
 /// Helper variable to count the actuators that have reached their desired position.
 /// If all actuators have reached their desired position, change state.
@@ -366,7 +368,7 @@ void moveToPos()
 
 /**
  * @brief Control the LED on the button based on the current state of the platform.
- * LED blinks in #IDLE state, is always on in #RUNNING state, and is off in #RETURN_HOME and #EMERGENCY states.
+ * LED blinks in #IDLE state, is always on in #RUNNING state, and is off in #RETURN_HOME and #EMERGENCY state.
  * @param state Current state of the platform.
  * @param time Current time in milliseconds.
 */
@@ -404,12 +406,14 @@ void stateButtonLight(PlatformState state, uint32_t time)
 /**
  * @brief Display the current state of the platform on the LCD display.
  * Includes symbols for each state. The LCD display is only updated when the state changes.
+ * Considered a critical region, interrupts are therefore disabled in this process. 
  * @param state Current state of the platform.
 */
 void lcdDisplayState(PlatformState state)
 {
-  ///Clearing the LCD display to avoid mix up with the different displays
-  lcd.clear();
+  noInterrupts();
+  /// Clearing the LCD display to avoid mix up with the different displays
+  // lcd.clear();
   /// Prints the State: first, since this is stationary 
   lcd.setCursor(0, 0);
   lcd.print("State:");
@@ -423,13 +427,13 @@ void lcdDisplayState(PlatformState state)
   if (state == 0)
   {
     // Prints IDLE and the symbol if the current state is 0
-    lcd.print("IDLE       ");
+    lcd.print("IDLE           ");
     lcd.setCursor(14, 1);
     lcd.write(byte(3));
   }
   else if (state == 1)
   {
-    lcd.print("SET TIME     ");
+    lcd.print("SET TIME       ");
     lcd.setCursor(14, 1);
     lcd.write(byte(4));
   }
@@ -441,22 +445,23 @@ void lcdDisplayState(PlatformState state)
   }
   else if (state == 3)
   {
-    lcd.print("REPOSITION   ");
+    lcd.print("REPOSITION     ");
     lcd.setCursor(14, 1);
     lcd.write(byte(2));
   }
   else if (state == 4)
   {
-    lcd.print("RETURN HOME  ");
+    lcd.print("RETURN HOME    ");
     lcd.setCursor(14, 1);
     lcd.write(byte(0));
   }
   else if (state == 5)
   {
-    lcd.print("EMERGENCY   ");
+    lcd.print("EMERGENCY      ");
     lcd.setCursor(14, 1);
     lcd.write(byte(1));
   }
+  interrupts();
 }
 
 
@@ -508,13 +513,13 @@ int16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos)
 /** 
  * @brief Intializes the pins for actuators and button, and sets up the LCD display.
  * SerialUSB for native port and Serial for programming port. H-bridge is enabled here and never powered down after this.
- * The LCD display is initialized, buttons, switches and LEDS are set up.
+ * The LCD display is started, blacklight enabled and symbols created. Button, switch and LED pins are set up.
  * The actuators are calibrated if #CALIBRATE.
 */
 void setup()
 {
   // -------- SERIAL SETUP -------- //
-  SerialUSB.begin(BAUD_RATE);
+  // SerialUSB.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
 
   // -------- LCD DISPLAY SETUP -------- //
@@ -573,13 +578,13 @@ void setup()
  * @brief Handels state transition and actuator movement.
  * Will stop if calibration is not valid.
  * Starts in #EMERGENCY state, and will go to #IDLE state when the actuators are at neutral position.
- * 
+ * The LCD display will only update when the state changes.
  * The three position switch is enabled after 1 second in #RUNNING state.
 */
 void loop()
 {
-  /// If the calibration runs and fails (e.g one of the actuators are not connected) or if #MANUAL_CALIBRATION is true, the program will stop
-  while ((MANUAL_CALIBRATION == true) || (!calibration_valid == true));
+  // If the calibration runs and fails (e.g one of the actuators are not connected) or if #MANUAL_CALIBRATION is true, the program will stop
+  // while ((calibration_valid == false) || (MANUAL_CALIBRATION == true));
 
   if (enable_switch_change || (current_state != RUNNING))
   {
@@ -602,7 +607,7 @@ void loop()
   {
     next_state = EMERGENCY;
   }
-  ///Checks if state has changed, if so it will go to the next state
+  // Checks if state has changed, if so it will go to the next state
   if (ENABLE_LCD_DISPLAY && (current_state != next_state))
   {
     lcdDisplayState(next_state);
@@ -684,7 +689,7 @@ void loop()
 
   case RETURN_HOME:
     actuator_count_reset = 0;
-    enable_switch_change = 0;
+    enable_switch_change = false;
 
     for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++)
     {
@@ -698,6 +703,7 @@ void loop()
     {
       if (current_pos[kth_actuator] <= POS_THRESHOLD)
       {
+        // SerialUSB.println(kth_actuator + 1);
         actuator_count_reset++;
       }
     }
@@ -720,6 +726,8 @@ void loop()
       current_pos[kth_actuator] = readActuators(ACTUATOR_POT_PINS[kth_actuator], ZERO_POS[kth_actuator], END_POS[kth_actuator]);
 
       desired_pos[kth_actuator] = current_pos[kth_actuator];
+
+      analogWrite(ACTUATOR_PWM_PINS[kth_actuator], 0);
     }
 
     // If emergency pin reads LOW, then emergency has been realeased and move to return home state
