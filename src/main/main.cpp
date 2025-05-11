@@ -23,8 +23,8 @@
 // From image_recognition/first_iteration/color_recognition.cpp
 // From image_recognition/main/server_services_node.cpp
 
-#define CAMERA_HEIGHT 864    // Can be SD: 480, HD: 720, FHD: 1080, QHD: 1440,  y
-#define CAMERA_WIDTH 1804    // Can be SD: 640, HD: 1280, FHD: 1920, QHD: 2560, x
+#define CAMERA_HEIGHT 864   // Can be SD: 480, HD: 720, FHD: 1080, QHD: 1440,  y
+#define CAMERA_WIDTH 1804   // Can be SD: 640, HD: 1280, FHD: 1920, QHD: 2560, x
 #define CAMERA_FRAMERATE 55 // If fps higher than what the thread can handle, it will just run lower fps.
 #define FPS_SAMPLES 10
 
@@ -62,6 +62,7 @@ private:
     T max = -1000000;
     T min = 1000000;
     std::vector<T> average_container;
+
 public:
     Local_max_min() = default;
 
@@ -106,18 +107,18 @@ public:
 //         }
 // };
 
-
-// Must be global for signal handler
 // -------------------------- SIGNAL HANDLER -------------------------- //
 
 std::thread temp_thread;
 
-std::atomic<bool> get_temp_running = true;
+// Must be global for signal handler
+std::atomic<bool> temp_thread_running = true;
 std::atomic<bool> camera_running = true;
 
+// Signal handler for SIGTERM and SIGINT (add ctrl-c and stuff)
 void signalHandler(int signum)
 {
-    get_temp_running = false;
+    temp_thread_running = false;
     camera_running = false;
 }
 
@@ -130,11 +131,6 @@ int main()
     cv::Point2f new_centre(0.0, 0.0);
     float radius;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed_time = std::chrono::duration<double, std::milli>(end - start);
-
-    // uint32_t delay_server_iterate = 0;
     opcua::ServerConfig config;
     config.setApplicationName("open62541pp server objectRecognition");
     config.setApplicationUri("urn:open62541pp.server.application");
@@ -227,7 +223,7 @@ int main()
             opcua::VariableTypeId::BaseDataVariableType,
             opcua::ReferenceTypeId::HasComponent);
 
-    // Feedback of status of object recognition to the RCU
+    // Feedback of status of object recognition to the RCU. REMOVED
     opcua::Result<opcua::NodeId> statusObjectNode =
         opcua::services::addVariable(
             server,
@@ -278,9 +274,7 @@ int main()
         auto last_read = std::chrono::high_resolution_clock::now();
         int32_t debounce_interval = TEMP_UPDATE * 1000; // in ms
         
-        while (get_temp_running) {
-            // Sleep here because of continue
-            // std::this_thread::sleep_for(std::chrono::seconds(10));
+        while (temp_thread_running) {
             
             auto now = std::chrono::high_resolution_clock::now();
             if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_read).count() > debounce_interval){
@@ -290,7 +284,6 @@ int main()
                 continue;
             }
 
-            // Open file
             std::ifstream temp_file("/sys/class/thermal/thermal_zone0/temp");
             // if file not oppened
             if (!temp_file.is_open()) {
@@ -298,42 +291,16 @@ int main()
                 continue;
             }
 
-            // Read the file
             std::getline(temp_file, file_content);
 
-            // Close the file
             temp_file.close();
 
             temp = (std::stof(file_content) / 1000.0f);
 
             opcua::services::writeDataValue(server, tempMeasurementNodeId, opcua::DataValue(opcua::Variant(temp)));
-            
-            // std::cout << "tamp: " << temp << std::endl;
         } });
 
-    // -------------------------- OpenCV -------------------------- //
-    std::cout << "Press ESC to stop. (Does not work if no window is displayed)" << std::endl;
-
-    // cv::Rect roi;
-
-    // Was (0, 120, 120) and (10, 255, 255).
-    // Lightings conditions such as sunlight might detect hands and face
-
-    cv::Scalar hsv_upper(144, 255, 255); // 15, 255, 255
-    cv::Scalar hsv_lower(35, 113, 0);    // 0, 150, 50
-
-    // cv::Scalar hsv_upper(35, 255, 255); // 15, 255, 255
-    // cv::Scalar hsv_lower(7, 110, 191);  // 0, 150, 50
-
-    // cv::Scalar hsv_upper(35, 190, 141);  // 0, 150, 50
-    // cv::Scalar hsv_lower(0, 150, 89); // 15, 255, 255
-
-    // cv::Scalar hsv_upper_o(179, 255, 255);  // 0, 150, 50
-    // cv::Scalar hsv_lower_o(177, 92, 89); // 15, 255, 255
-
-    // cv::Scalar hsv_upper_r(6, 236, 255); // 15, 255, 255
-    // cv::Scalar hsv_lower_r(0, 174, 163);  // 0, 150, 50
-
+    // -------------------------- LCCV -------------------------- //
     lccv::PiCamera cam(0);
 
     cam.options->video_width = CAMERA_WIDTH;
@@ -341,29 +308,14 @@ int main()
     cam.options->framerate = CAMERA_FRAMERATE;
     cam.options->verbose = true;
     cam.options->denoise = "cdn_fast";
-    cam.options->sharpness = 2.5f; // 6.5f
-    // cam.options->shutter = 1 / 1000.0f;
+    cam.options->sharpness = 2.5f;
     cam.options->setExposureMode(Exposure_Modes::EXPOSURE_SHORT);
     cam.options->setWhiteBalance(WhiteBalance_Modes::WB_INDOOR);
-    // cam.options->list_cameras = true;
 
     cam.startVideo();
 
-    Local_max_min<float> height_object;
-    Local_max_min<float> width_object;
-    Local_max_min<float> angle_object;
-    Local_max_min<float> area_object;
+    // ---------------------- KALMAN FILTER ---------------------- //
 
-    // cv::namedWindow("Image", cv::WINDOW_NORMAL);
-    // cv::namedWindow("Sub Image", cv::WINDOW_NORMAL);
-    // cv::namedWindow("Mask", cv::WINDOW_NORMAL);
-
-    // std::cout << cv::getBuildInformation() << std::endl;
-    // std::cout << cv::useOptimized() << std::endl;
-
-    // ----------------- KALMANFILTER ----------------- //
-
-    //**********************************************************
     // PARAMETRIZATION: KALMAN INIT
     //**********************************************************
     // First parameter sets the predefenied values for:
@@ -372,48 +324,26 @@ int main()
     //**********************************************************
     int iKalmanMode = 1;
     int iDebugMode = false;
+    
+    kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
 
-    int iTextOffsetCorrection_1 = 15; // PutText function has a small offset in y axis depending on the simbol you print (* or _)
-    int iTextOffsetCorrection_2 = 7;
+    // ------------------------ OPENCV ------------------------ //
 
-    cv::Scalar K_corr_Color(0, 0, 255);
-    cv::Scalar K_pred_Color(0, 255, 0);
-    cv::Scalar GT_Color(255, 0, 0);
-
-    int iTextSize1 = 1;     // Test 3.1 and 3.3
-    int iTextSize2 = 1.5;   // Test 3.1 and 3.3
-    int iTextThickness = 1; // Test 3.1 and 3.3
-    int iTestsOffset = 20;  // Test 3.1 and 3.3
-
-    int iFrameNum = 0;
     cv::Point2f enclosingCenter;
     cv::Point2f kallman_ball(0, 0);
 
-    kalmantracking::kalman kalmanKF(iKalmanMode, iDebugMode);
-
-    int image_count = 0;
-    int frame_count = 0;
-    float fps = -1;
-    std::vector<float> fps_counter_vec;
-
-    bool enable_print = false;
-
     cv::Mat image, sub_image;
-    cv::Mat grey, blur;
-    cv::Mat HSV, mask, range;
+    cv::Mat grey, mask;
 
     // For cropping
-    cv::Point2f start_point(0.0, 0.0), end_point(0.0, 0.0), sub_delta(0.0, 0.0);
+    cv::Point2f start_point(0.0, 0.0), end_point(0.0, 0.0);
     float image_cut_height = 120.0f;
     float image_cut_width = 110.0f;
 
     std::vector<cv::Point2f> measurements_point_vector;
 
-    // Local_max_min<float> difference_container;
-    // Local_max_min<float> distance_x;
-    // Local_max_min<float> distance_y;
+    int folder_size = 0;
 
-    // while (fps_counter_vec.size() < FPS_SAMPLES && camera_running)
     while (camera_running)
     {
         opcua::services::writeDataValue(server, cameraNodeXId, opcua::DataValue(opcua::Variant(kallman_ball.x)));
@@ -426,11 +356,6 @@ int main()
         object_recognition_enabled = opcua::services::readDataValue(server, enableObjectRecognitionId).value().value().to<bool>();
         server_delay_ms = server.runIterate();
 
-        // end = std::chrono::high_resolution_clock::now();
-        // elapsed_time = std::chrono::duration<double, std::milli>(end - start);
-
-        // fps_counter_vec.push_back(elapsed_time);
-
         // if (object_recognition_enabled == false)
         // {
         //     // enclosingCenter = cv::Point(-1, -1);
@@ -441,6 +366,8 @@ int main()
         //     std::this_thread::sleep_for(std::chrono::milliseconds(server_delay_ms));
         //     continue;
         // }
+
+        // start = std::chrono::high_resolution_clock::now();
 
         if (cam.getVideoFrame(image, 1000) == false)
         {
@@ -462,52 +389,22 @@ int main()
             {
                 sub_image = image(cv::Rect(start_point, end_point));
                 cv::cvtColor(sub_image, grey, cv::COLOR_BGR2GRAY);
-            } else {
+            }
+            else
+            {
                 cv::cvtColor(image, grey, cv::COLOR_BGR2GRAY);
             }
 
             if (image.empty())
             {
-                std::cout << "WTAH THE FUCK" << std::endl;
                 object_found = false;
                 continue;
             }
 
-            // cv::cvtColor(blur, grey, cv::COLOR_BGR2GRAY);
 
-            // // cv::adaptiveThreshold(grey, mask, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 201, 1); // 50, 100
-            // cv::threshold(grey, mask, 20, 255, cv::THRESH_BINARY);
-
-            // cv::erode(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 3)), cv::Point(-1, -1), 2);
-
-            // cv::dilate(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 3)), cv::Point(-1, -1), 2);
-
-            // cv::rectangle(image, start_point, end_point, cv::Scalar(0, 255, 0), 2);
-            // }
-            // else
-            // {
-
-            // if(object_found) {
             cv::adaptiveThreshold(grey, mask, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 201, 0);
-            // } else {
-                // cv::adaptiveThreshold(grey, mask, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 201, 3);
-            // }
-            
+
             cv::erode(mask, mask, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(11, 11)), cv::Point(-1, -1));
-
-            // cv::dilate(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)), cv::Point(-1, -1));
-
-            // cv::erode(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11)), cv::Point(-1, -1));
-            // cv::erode(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7)), cv::Point(-1, -1));
-
-            // cv::dilate(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)), cv::Point(-1, -1));
-            // cv::dilate(mask, mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7)), cv::Point(-1, -1));
-            // }
-
-            // cv::inRange(HSV, hsv_lower_o, hsv_upper_o, mask_o);
-            // cv::inRange(HSV, hsv_lower_r, hsv_upper_r, mask_r);
-
-            // mask = mask_o | mask_r;
 
             std::vector<std::vector<cv::Point>> contours;
             cv::findContours(mask.clone(), contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
@@ -516,22 +413,25 @@ int main()
 
             // cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 2);
 
-
             if (!contours.empty())
             {
-                if(object_found) {
+                if (object_found)
+                {
                     largestContour = *std::max_element(contours.begin(), contours.end(),
-                                    [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b)
-                                    {
-                                        return cv::contourArea(a) < cv::contourArea(b);
-                                    }); // Lambda function. Finds the largest contour
+                                                       [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b)
+                                                       {
+                                                           return cv::contourArea(a) < cv::contourArea(b);
+                                                       }); // Lambda function. Finds the largest contour
                     cv::minEnclosingCircle(largestContour, enclosingCenter, radius);
-                    if(!(std::abs(radius - 17) < 5)) {
+                    if (!(std::abs(radius - 17) < 5))
+                    {
                         object_found = false;
                         continue;
                     }
                     new_centre = enclosingCenter;
-                } else {
+                }
+                else
+                {
 
                     for (auto iter = contours.begin(); iter != contours.end(); iter++)
                     {
@@ -539,23 +439,24 @@ int main()
                         if (area > 350 && area < 950)
                         {
                             largestContour = *iter;
+
+                            if (largestContour.size() < 5)
+                            {
+                                continue;
+                            }
+
                             cv::RotatedRect eclipse = cv::fitEllipse(largestContour);
                             float e_height = eclipse.size.height;
                             float e_width = eclipse.size.width;
-                            
-                            if (std::abs(e_height - e_width) < 10 && std::abs(eclipse.center.y - 434) < 80 && std::abs(eclipse.center.x - 900) < 100)
+
+                            if (std::abs(e_height - e_width) < 10 && std::abs(eclipse.center.y - 434) < 130 && std::abs(eclipse.center.x - 900) < 200)
                             {
-                                // height_object.insert(e_height);
-                                // width_object.insert(e_width);
-                                // angle_object.insert(eclipse.angle);
-                                // area_object.insert(area);
-                                // std::cout << "Height " << e_height << " Width: " << e_width << " Angle: " << eclipse.angle << std::endl;
-                                // std::cout << "Area:" << area << std::endl;
-                                // new_centre = ;
-                                // cv::ellipse(image, eclipse, cv::Scalar(255, 0, 0), 2);
-                                if(object_found) {
+                                if (object_found)
+                                {
                                     new_centre = eclipse.center;
-                                } else {
+                                }
+                                else
+                                {
                                     measurements_point_vector.push_back(eclipse.center);
                                 }
                                 break;
@@ -570,123 +471,41 @@ int main()
                 object_found = false;
             }
 
-            if(object_found == false && (measurements_point_vector.size() > 3)) {
+            if (object_found == false && (measurements_point_vector.size() >= 2))
+            {
                 int confidence = 0;
                 cv::Point2f average_find(0.0, 0.0);
-                for(auto iter = measurements_point_vector.begin(); iter != measurements_point_vector.end() - 1; iter++ ) {
+                for (auto iter = measurements_point_vector.begin(); iter != measurements_point_vector.end() - 1; iter++)
+                {
                     float diff_x = std::abs((*iter).x - (*std::next(iter, 1)).x);
                     float diff_y = std::abs((*iter).y - (*std::next(iter, 1)).y);
-                    if(diff_x < 5 && diff_y < 5) {
+                    if (diff_x < 5 && diff_y < 5)
+                    {
                         average_find += *iter;
                         confidence++;
                     }
-                    if(confidence >= 2) {
+                    if (confidence >= 2)
+                    {
                         object_found = true;
-                        std::cout << "average find x " << average_find.x / (float) confidence << " y " << average_find.y / (float) confidence << std::endl;
+                        std::cout << "average find x " << average_find.x / (float)confidence << " y " << average_find.y / (float)confidence << std::endl;
                         std::cout << "object found " << object_found << std::endl;
-                        new_centre = average_find / (float) confidence;
+                        new_centre = average_find / (float)confidence;
                         measurements_point_vector.clear();
                         break;
                     }
                 }
             }
 
-
-            // if (frame_count >= 50 && object_found)
-            // {
-            //     auto end = std::chrono::high_resolution_clock::now();
-            //     fps = frame_count * 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-            //     frame_count = 0;
-            //     fps_counter_vec.push_back(fps);
-
-            //     start = std::chrono::high_resolution_clock::now();
-            // }
-
-            // if (fps > 0)
-            // {
-            //     std::ostringstream fps_label;
-            //     fps_label << std::fixed << std::setprecision(2);
-            //     fps_label << "FPS: " << fps;
-            //     std::string fps_label_str = fps_label.str();
-            //     std::cout << fps_label_str << std::endl;
-
-            //     // cv::putText(image, fps_label_str.c_str(), cv::Point(CAMERA_HEIGHT - 50, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-            // }
-
-            // std::cout << "Ball.x =  " << enclosingCenter.x << std::endl
-            //      << "Ball.y =  " << enclosingCenter.y << std::endl;
-            // std::cout << "KBall.x = " << kallman_ball.x << std::endl
-            //      << "KBall.y = " << kallman_ball.y << std::endl;
-
-            // if (radius < 39.0f) {
-            //     enclosingCenter = cv::Point(0, 0);
-            // }
-
-            // new_centre = calculateCenter(largestContour);
-
-            // enclosingCenter.x = iFrameNum*4 % CAMERA_WIDTH;
-            // enclosingCenter.y = 512;
-
-            // enclosingCenter.x = 0;
-            // enclosingCenter.y = 0;
-
-            // enclosingCenter = new_centre;
-
-            // std::cout << "enclosing centre.x: " << enclosingCenter.x << " enclosing centre.y: " << enclosingCenter.y << std::endl;
-            // std::cout << "New center.x: " << new_centre.x << " New center.y: " << new_centre.y << std::endl;
-
-            // Point p1 = Point(kallman_ball.x-10, kallman_ball.y-10); //Test 3.3
-            // // Point p2 = Point(kallman_ball.x + 10, kallman_ball.y + 10); //Test 3.3
-            // Point p1 = Point(kallman_ball.x - 10, kallman_ball.y - 10); // Test 3.3
-            // Point p2 = Point(kallman_ball.x + 10, kallman_ball.y + 10); // Test 3.3
-
-            // std::cout << "Object found: " << object_found << std::endl;
-
-            // // std::cout << kalmanKF.getStatus() << std::endl;
-        
-            // for (int i = 0; i < kalmanKF.getGroundTruthList().size(); i++)
-            // {
-            //     putText(image, "o", Point(kalmanKF.getGroundTruthList()[i].x - 7, kalmanKF.getGroundTruthList()[i].y + iTextOffsetCorrection_2), FONT_HERSHEY_COMPLEX, iTextSize2, GT_Color, iTextThickness);
-            // }
-            // for (int i = 0; i < kalmanKF.getPredictedList().size(); i++)
-            // {
-            //     putText(image, "*", Point(kalmanKF.getPredictedList()[i].x, kalmanKF.getPredictedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_pred_Color, iTextThickness);
-            // }
-            // for (int i = 0; i < kalmanKF.getCorrectedList().size(); i++)
-            // {
-            //     putText(image, "*", Point(kalmanKF.getCorrectedList()[i].x - 5, kalmanKF.getCorrectedList()[i].y + iTextOffsetCorrection_1), FONT_HERSHEY_COMPLEX, iTextSize2, K_corr_Color, iTextThickness);
-            // }
-
-            // Since Kalmanfilter ball will try to predict, enclosing centre will be zero if no object, klamna ball won't be zero
-
-            // sub_centre = new_centre;
-            // If object found we need to add margin
-            // new_centre = kallman_ball;
-
             if (object_found)
             {
                 new_centre.x = new_centre.x + (start_point.x);
                 new_centre.y = new_centre.y + (start_point.y);
-
-                // std::cout << "kalman.x " << kallman_ball.x << " kalman.y " << kallman_ball.y << std::endl;
-                // std::cout << "new_centre.x " << new_centre.x << ", new_centre.y " << new_centre.y << std::endl;
-                
-                // std::cout << "Object found" << std::endl;
-                // difference_container.insert(std::abs(sub_delta.x - new_centre.x));
-                // distance_x.insert(new_centre.x);
-                // distance_y.insert(new_centre.y);
             }
-
-            frame_count++;
 
             start_point.x = constrain(new_centre.x - image_cut_width / 2.0f, 0.0f, (float)CAMERA_WIDTH);
             start_point.y = constrain(new_centre.y - image_cut_height / 2.0f, 0.0f, (float)CAMERA_HEIGHT);
             end_point.x = constrain(new_centre.x + image_cut_width / 2.0f, 0.0f, (float)CAMERA_WIDTH);
             end_point.y = constrain(new_centre.y + image_cut_height / 2.0f, 0.0f, (float)CAMERA_HEIGHT);
-            
-            // std::cout << "start_point.x " << start_point.x << " start_point.y " << start_point.y << std::endl;
-            // std::cout << "end_point.x " << end_point.x << " end_point.y " << end_point.y << std::endl;
 
             kallman_ball = kalmanKF.Predict((cv::Point2i)new_centre);
 
@@ -694,62 +513,14 @@ int main()
             {
                 object_found = false;
             }
-
-            // mask is a black and white image from the InRange function
-            // It is not until the server runs iterate that the values will be updated
-
-            // auto end = std::chrono::high_resolution_clock::now();
-
-            // elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-            // delay_server_iterate = server.runIterate();
-            // std::this_thread::sleep_for(std::chrono::milliseconds(delay_server_iterate));
-
-            // new_centre.x = constrain(new_centre.x, image_cut_width, (float)CAMERA_WIDTH - image_cut_width);
-            // new_centre.y = constrain(new_centre.y, image_cut_height, (float)CAMERA_HEIGHT - image_cut_height);
-
-            // To save images.
-            // if (cv::waitKey(1) == 'r') {
-            //     // cv::imwrite("pre-mask.jpg", pre_mask);
-            //     // cv::imwrite("post-mask.jpg", mask);
-            //     cv::imwrite("image.jpg", image);
-            //     std::cout << "Images saved" << std::endl;
-            // }
-
-            // std::cout << "difference: " << std::abs(sub_delta.x - new_centre.x) << std::endl;
-
-            iFrameNum++;
-
-            // cv::imshow("Image", image);
-            // cv::imshow("Mask", mask);
-
-
-            // quit on q button
-            // Remove when time for final push
-            // if (cv::waitKey(1) == 'q')
-            // {
-            //     get_temp_running = false;
-            //     camera_running = false;
-            //     break;
-            // }
         }
     }
 
-    // std::cout << "Height diff: " << height_object.getDiff() << ", Min: " << height_object.getMin() << ", Max: " << height_object.getMax() << std::endl;
-    // std::cout << "Width diff: " << width_object.getDiff() << ", Min: " << width_object.getMin() << ", Max: " << width_object.getMax() << std::endl;
-    // std::cout << "Angle diff: " << angle_object.getDiff() << ", Min: " << angle_object.getMin() << ", Max: " << angle_object.getMax() << std::endl;
-    // std::cout << "Area diff: " << area_object.getDiff() << ", Min: " << area_object.getMin() << ", Max: " << area_object.getMax() << std::endl;
-
-    // std::cout << "Average FPS: " << std::accumulate(fps_counter_vec.begin(), fps_counter_vec.end(), 0.0) / fps_counter_vec.size() << std::endl;
+    temp_thread_running = false; // For when no signal received. 
 
     server.stop();
     cam.stopVideo();
     temp_thread.join(); // Join at bottom, to not hault camera if that would be the case
-
-    // cv::destroyWindow("Video");
-    // cv::destroyWindow("Mask");
-    // cv::destroyAllWindows();
-    std::cout << "End of opencv" << std::endl;
 
     std::cout << "End of file!" << std::endl;
     return 0;

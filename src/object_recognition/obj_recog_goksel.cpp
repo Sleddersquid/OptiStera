@@ -6,6 +6,8 @@
 #define CAMERA_WIDTH 640    // Can be SD: 640, HD: 1280, FHD: 1920, QHD: 2560
 #define CAMERA_FRAMERATE 100 // If fps higher than what the thread can handle, it will just run lower fps.
 
+// From https://github.com/RsGoksel/Cpp-Object-Detection-Yolov5-OpenCV/blob/main/Yolov5_Video_Object_Detection/Video_Obj_Detection.cpp
+
 std::vector<std::string> load_class_list()
 {
     // Reading a list of class names from the file which in "Models/classes.txt" and keep them in a vector
@@ -26,7 +28,7 @@ void load_net(cv::dnn::Net &net, bool is_cuda)
     // Loading yolov5s onnx model
     //  E�itilmi� Onnx modeli cekilir2
 
-    auto result = cv::dnn::readNet("../config_files/yolov5s.onnx");
+    auto result = cv::dnn::readNet("../config_files/yolov5n.onnx");
     if (is_cuda)
     {
         std::cout << "Using CUDA\n";

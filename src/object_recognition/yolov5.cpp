@@ -2,6 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 
+// From https://github.com/doleron/yolov5-opencv-cpp-python/tree/main
+
 std::vector<std::string> load_class_list()
 {
     std::vector<std::string> class_list;
@@ -16,7 +18,7 @@ std::vector<std::string> load_class_list()
 
 void load_net(cv::dnn::Net &net, bool is_cuda)
 {
-    auto result = cv::dnn::readNet("../config_files/yolov5n.onnx");
+    auto result = cv::dnn::readNet("../config_files/yolo5n.onnx");
     if (is_cuda)
     {
         std::cout << "Attempty to use CUDA\n";

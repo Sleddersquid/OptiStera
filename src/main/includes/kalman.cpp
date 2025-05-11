@@ -148,10 +148,10 @@ kalmantracking::kalman::kalman(unsigned int iMode, bool bFullDebugOn)
 
 		P = Mat::zeros(Size(stateSize, stateSize), uiType);
 		// cv::setIdentity(P);
-		P.at<float>(0) = 10e3f;
-		P.at<float>(5) = 10e3f;
-		P.at<float>(10) = 10e3f;
-		P.at<float>(15) = 10e3f;
+		P.at<float>(0) = 10e5f;
+		P.at<float>(5) = 10e5f;
+		P.at<float>(10) = 10e5f;
+		P.at<float>(15) = 10e5f;
 		if (bFullDebugOn)
 			cout << "P = " << endl
 				 << " " << P << endl
@@ -159,10 +159,10 @@ kalmantracking::kalman::kalman(unsigned int iMode, bool bFullDebugOn)
 
 		Q = Mat::zeros(Size(stateSize, stateSize), uiType);
 		cv::setIdentity(Q);
-		Q.at<float>(0) = 250.0f;
-		Q.at<float>(5) = 100.0f;
-		Q.at<float>(10) = 250.0f;
-		Q.at<float>(15) = 100.0f;
+		Q.at<float>(0) = 25.0f;
+		Q.at<float>(5) = 10.0f;
+		Q.at<float>(10) = 25.0f;
+		Q.at<float>(15) = 10.0f;
 		if (bFullDebugOn)
 			cout << "Q = " << endl
 				 << " " << Q << endl
@@ -170,8 +170,8 @@ kalmantracking::kalman::kalman(unsigned int iMode, bool bFullDebugOn)
 
 		R = Mat::zeros(Size(measurementSize, measurementSize), uiType);
 		cv::setIdentity(R);
-		R.at<float>(0) = 100.0f;
-		R.at<float>(3) = 100.0f;
+		R.at<float>(0) = 25.0f;
+		R.at<float>(3) = 25.0f;
 		if (bFullDebugOn)
 			cout << "R = " << endl
 				 << " " << R << endl
