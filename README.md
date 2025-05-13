@@ -1,1 +1,1 @@
-Configuration files from Festo Automation Suite
+MATLAB files for simulation and plotting
