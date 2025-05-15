@@ -7,6 +7,9 @@
 
 #include "pin_layout.h"
 
+/// Defines the time for the watchdog, in ms
+#define WATCHDOG_TIMEOUT 50
+
 /// The number of actuators in the platform.
 #define NUM_ACTUATORS 3
 
@@ -70,7 +73,7 @@ int16_t END_POS[NUM_ACTUATORS]       = {671, 675, 669};
 
 // Wave motion (heave and pitch)
 #if ENABLE_BIAS
-  #define ACTUATOR_BIAS_1 1*PI/4
+  #define ACTUATOR_BIAS_1 1*PI/8
   #define ACTUATOR_BIAS_2 0
   #define ACTUATOR_BIAS_3 0
 #endif // ENABLE_BIAS
@@ -93,7 +96,7 @@ const float ACTUATOR_BIAS[NUM_ACTUATORS] = {ACTUATOR_BIAS_1, ACTUATOR_BIAS_2, AC
 #define MAX_PWM 255
 
 /// The margin of error to accept in position for the actuators
-#define POS_THRESHOLD 8
+#define POS_THRESHOLD 10
 
 /// Array for the actuators direction pins
 const uint8_t ACTUATOR_DIR_PINS[NUM_ACTUATORS] = {ACTUATOR_DIR_PIN_1, ACTUATOR_DIR_PIN_2, ACTUATOR_DIR_PIN_3};

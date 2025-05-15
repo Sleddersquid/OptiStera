@@ -28,6 +28,7 @@
 #include <math.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
+#include <Scheduler.h>
 
 #if ENABLE_LCD_DISPLAY
   /// Initialize the LCD display with address, columns and rows
@@ -113,8 +114,11 @@ byte runningstate[]=
     B00000,
 };
 
+
+bool first_emergency = true;
+
 /// Interval between button LED blinks in IDLE state.
-uint16_t blink_interval = 1000;
+const uint16_t blink_interval = 1000;
 /// Last time the button LED was turned on/off.
 uint32_t previousMillis;
 /// Current state of the button LED.
@@ -175,9 +179,9 @@ uint16_t next_period = period;
 bool enable_switch_change = false;
 
 /// The time to be read in ms, input to positionFunction(int t, float bias).
-uint32_t time_read; 
+uint32_t time_read = 0; 
 /// The timestamp at change between states #IDLE \f$ \to \f$ #RUNNING.
-uint32_t last_timestamp;
+uint32_t last_timestamp = 0;
 
 /// Desired position for the actuators, ranges from 0..1023.
 int32_t desired_pos[NUM_ACTUATORS] = {0, 0, 0};
@@ -313,8 +317,8 @@ void change_state()
 */
 int32_t positionFunction(int t, float bias)
 {
-  if (t == 0)
-    return VERTICAL_SHIFT - AMPLUTIDE;
+  // if (t == 0)
+  //   return VERTICAL_SHIFT - AMPLUTIDE;
   return -AMPLUTIDE * cos(((2 * PI * t) / period) + bias) + VERTICAL_SHIFT;
 }
 
@@ -398,6 +402,10 @@ void stateButtonLight(PlatformState state, uint32_t time)
 
   case EMERGENCY:
     digitalWrite(BUTTON_LED_PIN, LOW);
+    break;
+
+  default:
+    // Do nothing
     break;
   }
 }
@@ -504,11 +512,20 @@ int manyReadDigital(int pin)
  * @param end_pos End position from calibration.
  * @return Mapped position of the actuator.
 */
-int16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos)
+int32_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos)
 {
   long read = readAnalogueAvg(actuator_pin);
   return constrain(map(read, zero_pos, end_pos, MIN_POS, MAX_POS), MIN_POS, MAX_POS);
 }
+
+
+/** @brief This function has to be present, otherwise watchdog won't work \cite watch_dog
+*/
+void watchdogSetup(void) 
+{
+// Do here
+}
+
 
 /** 
  * @brief Intializes the pins for actuators and button, and sets up the LCD display.
@@ -518,8 +535,10 @@ int16_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos)
 */
 void setup()
 {
+  // pinMode(ANALOGUE_DISCORVEY_PIN, OUTPUT);
+
   // -------- SERIAL SETUP -------- //
-  // SerialUSB.begin(BAUD_RATE);
+  // Serial.begin(BAUD_RATE);
   // analogReadResolution(10); // 10 bit is default
 
   // -------- LCD DISPLAY SETUP -------- //
@@ -561,7 +580,7 @@ void setup()
   pinMode(ACTUATOR_PWM_PIN_3, OUTPUT);
 
   pinMode(PIN_H_BRIDGE, OUTPUT);
-  // Is inverted, so /Enable
+  // Is inverted, so /Enable 
   digitalWrite(PIN_H_BRIDGE, LOW);
 
   // If no claibration is done, we assume that calibration is already done previously
@@ -570,7 +589,10 @@ void setup()
     calibrate(MANUAL_CALIBRATION);
   }
 
-  // delay(1000);
+  // Scheduler.start();
+
+  // This is Jose Manuel, the watchdog that oversees that everything goes as planned. Especially when it is time for the presentation. 
+  watchdogEnable(WATCHDOG_TIMEOUT);
 }
 
 
@@ -583,6 +605,8 @@ void setup()
 */
 void loop()
 {
+  watchdogReset();
+  // digitalWrite(ANALOGUE_DISCORVEY_PIN, HIGH);
   // If the calibration runs and fails (e.g one of the actuators are not connected) or if #MANUAL_CALIBRATION is true, the program will stop
   // while ((calibration_valid == false) || (MANUAL_CALIBRATION == true));
 
@@ -607,6 +631,7 @@ void loop()
   {
     next_state = EMERGENCY;
   }
+
   // Checks if state has changed, if so it will go to the next state
   if (ENABLE_LCD_DISPLAY && (current_state != next_state))
   {
@@ -623,12 +648,16 @@ void loop()
     stateButtonLight(current_state, time_read);
   }
 
+  // digitalWrite(ANALOGUE_DISCORVEY_PIN, LOW);
+
   switch (current_state)
   {
   case IDLE:
+    digitalWrite(PIN_H_BRIDGE, HIGH); // Disable H-bridge
     break;
 
   case SET_TIME:
+    digitalWrite(PIN_H_BRIDGE, LOW); // Enable H-bridge
     last_timestamp = time_read;
     next_state = RUNNING;
     break;
@@ -638,7 +667,7 @@ void loop()
 
     for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++)
     {
-      desired_pos[kth_actuator] = positionFunction(time_read, ACTUATOR_BIAS[kth_actuator]);
+      desired_pos[kth_actuator] = positionFunction((time_read % period), ACTUATOR_BIAS[kth_actuator]);
     }
 
     // Moves actuators to desired position, calculating direction and speed for actuators
@@ -688,6 +717,7 @@ void loop()
     break;
 
   case RETURN_HOME:
+    digitalWrite(PIN_H_BRIDGE, LOW); // Enable H-bridge
     actuator_count_reset = 0;
     enable_switch_change = false;
 
@@ -720,6 +750,7 @@ void loop()
     break;
 
   case EMERGENCY:
+    digitalWrite(PIN_H_BRIDGE, HIGH); // Disable H-bridge
     // Read and set desired pos for all actuators, so there is no big moment of inertia when going over to return home state
     for (int kth_actuator = 0; kth_actuator < NUM_ACTUATORS; kth_actuator++)
     {
@@ -737,8 +768,9 @@ void loop()
     }
 
     break;
+
   default:
-    SerialUSB.println("The fuck");
+    // Do nothing
     break;
   }
 }

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define ANALOGUE_DISCORVEY_PIN 40
+
 /// Pin for when the emergency has been activated.
 #define EMERGENCY_STOP_PIN 50
 
