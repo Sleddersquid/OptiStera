@@ -519,11 +519,11 @@ int32_t readActuators(int actuator_pin, int16_t zero_pos, int16_t end_pos)
 }
 
 
-/** @brief This function has to be present, otherwise watchdog won't work \cite watch_dog
+/** @brief This function has to be present, otherwise watchdog won't work \cite watch_dog. See \cite watchDog_commit_need_void_func for more information.
 */
 void watchdogSetup(void) 
 {
-// Do here
+  // Do nothing
 }
 
 
@@ -591,7 +591,8 @@ void setup()
 
   // Scheduler.start();
 
-  // This is Jose Manuel, the watchdog that oversees that everything goes as planned. Especially when it is time for the presentation. 
+  // This is Jose Manuel, the watchdog that oversees that everything goes as planned. Especially when it is time for the presentation.
+  // If Jose Manuel is not happy with the frequency of the loop, he will reset the Arduino. 
   watchdogEnable(WATCHDOG_TIMEOUT);
 }
 

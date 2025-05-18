@@ -1,11 +1,11 @@
 import serial
 # import pandas as pd
 
-SAMPLES = 5000
+# SAMPLES = 5000
 
-path = "MATLAB_code/"
+path = "./"
 
-csv_file = path + "noe.csv"
+csv_file = path + "StuwaldoV3.log"
 
 with open(csv_file, 'w'): pass
 
@@ -15,11 +15,11 @@ def readserial(comport, baudrate):
 
     current_sample = 0
 
-    while current_sample < SAMPLES:
+    while True:
         # Reads line from Serial port, decodes from bytes to str and strips leading and trailing whitespace
         line = ser.readline().decode().strip()
         
-        print(line)
+        # print(line)
 
         if not line: # If line empty, next iteration
             continue
@@ -31,4 +31,4 @@ def readserial(comport, baudrate):
     ser.close()
 
 if __name__ == '__main__':
-    readserial('COM5', 115200)
+    readserial('COM6', 115200)
