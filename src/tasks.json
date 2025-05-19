@@ -1,5 +1,3 @@
-// This is a copy of the .vscode/task.json
-// This file is at the root directory where the vscode server is instantiated
 {
 	"version": "2.0.0",
 	"tasks": [
@@ -9,6 +7,7 @@
 			"command": "g++",
 			"problemMatcher": ["$gcc"],
 			"args": [
+				"-Wpedantic", "-Wextra", "-Wall", // "-Werror", // Warnings
 				"${fileDirname}/${fileBasename}", // This is the file to compile, so .cpp file
 				"-o",
 				"${fileDirname}/executables/${fileBasenameNoExtension}", // This is the output file, so the executable
