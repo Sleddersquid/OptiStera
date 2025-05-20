@@ -332,6 +332,12 @@ section.content.sys_overview > h2 {
   width: 50%;
 }
 
+section.content.final_product > h2 {
+  color: white;
+  width: 50%;
+}
+
+
 a.button {
   transition: box-shadow 0.2s ease-in;
   box-shadow: inset 4px 0 0 0em white;
