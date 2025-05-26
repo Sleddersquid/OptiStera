@@ -421,9 +421,9 @@ section.content.about {
   height: 67%;
 }
 
-.timeline-event.last {
+/* .timeline-event.last {
   height: 240px;
-}
+} */
 
 .timeline-event {
   position: relative;
