@@ -519,7 +519,7 @@ a.USN.logo > img {
     width: 80%;
   }
 
-  section.content.sys_overview, section.content.final_product > h2 {
+  section.content.sys_overview > h2, section.content.final_product > h2 {
     width: 80%;
     font-size: 20px;
   }
